@@ -5,6 +5,11 @@ const text = () => {
         e.preventDefault();
     };
 
+    //수정기능
+    const onUpdate = (e) => {
+        e.preventDefault();
+    };
+
     //삭제기능
     const onDelete = (e) => {
         e.preventDefault();
@@ -17,6 +22,7 @@ const text = () => {
                 <input type="text" />
                 <button type="submit">등록</button>
             </form>
+            <button onClick={onUpdate}>수정</button>
             <button onClick={onDelete}>삭제</button>
         </div>
     );
