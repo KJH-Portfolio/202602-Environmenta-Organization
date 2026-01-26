@@ -6,7 +6,7 @@ const text = () => {
     };
 
     //ㅋ키키
-    const onKiki = (e) => {
+    const oniKiki = (e) => {
         e.preventDefault();
     };
 
