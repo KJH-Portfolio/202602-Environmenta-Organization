@@ -20,21 +20,8 @@ const text = () => {
         e.preventDefault();
     };
 
-    //버튼 테스트
-    const onTest = (e) => {
-        e.preventDefault();
-    };
-
-    //수정 기능
-    const onUpdate2 = (e) => {
-        e.preventDefault();
-    };
-
-    //감자 서버 on
-    const onPotato = (e) => {
-        e.preventDefault();
-    };
-
+    //기능 더 만들지마
+    //여기까지만 해
     return (
         <div>
             <h1>text</h1>
