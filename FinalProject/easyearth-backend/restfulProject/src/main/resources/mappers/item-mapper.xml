@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="itemMapper">
+  	
+  	<!-- 포인트상점 아이템 조회 매퍼 -->
+  	<select id="storeItem" resultType="ItemVO">
+  		SELECT *
+  		FROM ITEM
+  		ORDER BY PRICE
+  	</select>
+  	
+  	<!-- 포인트상점 보유중인 아이템 조회 매퍼 -->
+  	<select id="storeMyItem"
+	        parameterType="int"
+	        resultType="UserItemList">
+	
+	    SELECT
+	        UI.UI_ID,
+	        UI.ITEM_ID,
+	        UI.USER_ID,
+	        UI.PRICE,
+	        UI.CATEGORY,
+	        UI.IS_EQUIPPED,
+	        UI.ACQUIRED_AT,
+	        I.CREATED_AT,
+	        I.UPDATED_AT,
+			I.IS_ON_SALE,
+	        I.NAME,
+	        I.DESCRIPTION,
+	        I.RARITY,
+	        I.CATEGORY
+	    FROM USER_ITEMS UI
+	    JOIN ITEM I
+	        ON UI.ITEM_ID = I.ITEM_ID
+	    WHERE UI.USER_ID = #{memberId}
+		ORDER BY PRICE
+	</select>
+	
+	<!-- 전체 아이템 중 특정 하나 조회 -->
+	<select id="itemsDetail" parameterType="int" resultType="ItemVO">
+		SELECT ITEM_ID,
+				NAME,
+				DESCRIPTION,
+				PRICE,
+				RARITY,
+				IS_ON_SALE,
+				CATEGORY,
+				CREATED_AT,
+				UPDATED_AT
+		FROM ITEM
+		WHERE ITEM_ID = #{itemId}
+	</select>
+	
+	<!-- 보유 아이템 중 특정 하나 조회 -->
+	<select id="myItemsDetail" parameterType="map" resultType="UserItemList">
+		SELECT 
+	        I.ITEM_ID,
+	        I.NAME,
+	        I.DESCRIPTION,
+	        I.PRICE,
+	        I.RARITY,
+	        I.IS_ON_SALE,
+	        I.CATEGORY,
+	        UI.UI_ID,
+	        UI.USER_ID,
+	        UI.ACQUIRED_AT,
+	        UI.IS_EQUIPPED,
+	        UI.EQUIPPED_AT,
+	        UI.PRICE AS USER_ITEM_PRICE,
+	        UI.CATEGORY AS USER_ITEM_CATEGORY
+	    FROM ITEM I
+	    LEFT JOIN USER_ITEMS UI
+	        ON I.ITEM_ID = UI.ITEM_ID
+	       AND UI.USER_ID = #{userId}
+	    WHERE I.ITEM_ID = #{itemId}
+	</select>
+	
+	
+	<!-- 보유중인 아이템 수 조회 -->
+	<select id="itemCount" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		FROM USER_ITEMS
+		WHERE USER_ID = #{memberId}
+	</select>
+	
+	<!-- 카테고리별 아이템 조회 -->
+	<select id="itemCategories" parameterType="string" resultType="ItemVO">
+		SELECT
+		ITEM_ID,
+		NAME,
+		DESCRIPTION,
+		PRICE,
+		RARITY,
+		IS_ON_SALE,
+		CATEGORY,
+		CREATED_AT,
+		UPDATED_AT
+		FROM ITEM
+		WHERE CATEGORY = #{category}
+		ORDER BY PRICE
+	</select>
+	
+	<!-- 등급별 아이템 조회 -->
+	<select id="itemRarity" parameterType="string" resultType="ItemVO">
+		SELECT
+		ITEM_ID,
+		NAME,
+		DESCRIPTION,
+		PRICE,
+		RARITY,
+		IS_ON_SALE,
+		CATEGORY,
+		CREATED_AT,
+		UPDATED_AT
+		FROM ITEM
+		WHERE RARITY = #{rarity}
+		ORDER BY PRICE
+	</select>
+
+  	
+  	<!-- 포인트상점 아이템 구매 -->
+  	<insert id="buyItem" parameterType="UserItemsVO">
+	    INSERT INTO USER_ITEMS (
+	        UI_ID,
+	        ITEM_ID,
+	        USER_ID,
+	        ACQUIRED_AT,
+	        IS_EQUIPPED,
+	        PRICE,
+	        CATEGORY
+	    ) VALUES (
+			SEQ_UI_ID.NEXTVAL,
+	        #{itemId},
+	        #{userId},
+	        SYSDATE,
+	        'N',
+	        #{price},
+	        #{category}
+	    )
+	</insert>
+	
+	<!-- 아이템 구매시 포인트 차감 -->
+	<update id="deductItemPoint" parameterType="hashmap">
+		UPDATE POINT_WALLET
+		SET NOW_POINT = NOW_POINT - #{price}
+		WHERE MEMBER_ID = #{memberId}
+		AND NOW_POINT >= #{price}
+	</update>
+
+	<!-- 1️ 장착하려는 아이템의 카테고리 조회 -->
+    <select id="selectCategoryByUiId"
+            parameterType="map"
+            resultType="string">
+        SELECT CATEGORY
+        FROM USER_ITEMS
+        WHERE ITEM_ID = #{itemId}
+          AND USER_ID = #{userId}
+    </select>
+
+
+    <!-- 2️ 같은 카테고리 기존 장착 아이템 전부 해제 -->
+    <update id="unequipByCategory"
+            parameterType="map">
+        UPDATE USER_ITEMS
+        SET IS_EQUIPPED = 'N',
+            EQUIPPED_AT = NULL
+        WHERE USER_ID = #{userId}
+          AND CATEGORY = #{category}
+          AND IS_EQUIPPED = 'Y'
+    </update>
+
+    <!-- 3️ 선택한 아이템 장착 -->
+    <update id="equipItem"
+            parameterType="map">
+        UPDATE USER_ITEMS
+        SET IS_EQUIPPED = 'Y',
+            EQUIPPED_AT = SYSDATE
+        WHERE ITEM_ID = #{itemId}
+        AND USER_ID = #{userId}
+    </update>
+
+	<!-- 아이템 상태값 -->
+	<select id="selectStatus" parameterType="map" resultType="string">
+		SELECT IS_EQUIPPED FROM USER_ITEMS WHERE ITEM_ID = #{itemId} AND USER_ID = #{userId}
+	</select>
+	
+	<!-- 아이템 장착 해제 -->
+	<update id="updateStatus" parameterType="map">
+		UPDATE USER_ITEMS SET IS_EQUIPPED = 'N' WHERE ITEM_ID = #{itemId} AND USER_ID=#{userId}
+	</update>
+	
+	<!-- 랜덤뽑기 -->
+	<select id="randomPull" parameterType="string" resultType="ItemVO">
+		SELECT * FROM (
+			SELECT
+				ITEM_ID,
+				NAME,
+				DESCRIPTION,
+				PRICE,
+				RARITY,
+				IS_ON_SALE,
+				CATEGORY
+			FROM ITEM
+			WHERE RARITY = #{rarity}
+			ORDER BY DBMS_RANDOM.VALUE
+		)
+		WHERE ROWNUM = 1
+	</select>
+<!-- 랜덤으로 뽑은 아이템 userItem에 넣기-->
+	<insert id="itemMapper.insertItemToMember" parameterType="com.kh.spring.item.model.vo.RandomPullHistory">
+		INSERT INTO USER_ITEMS (
+			UI_ID,
+			ITEM_ID,
+			USER_ID,
+			PRICE,
+			ACQUIRED_AT,
+			IS_EQUIPPED,
+			CATEGORY
+			) VALUES (
+				SEQ_UI_ID.NEXTVAL,
+				#{itemId},
+				#{memberId},
+				#{price},
+				SYSDATE,
+				'N',
+				#{category}
+				)
+	</insert>
+<!--아이템 중복 체크-->
+	<select id="checkDuplicateItem" parameterType="RandomPullHistory" resultType="_int">
+		SELECT COUNT(*)
+		FROM USER_ITEMS
+		WHERE USER_ID = #{memberId}
+		AND ITEM_ID = #{itemId}
+	</select>
+<!--포인트 지급-->
+	<update id="addPoint" parameterType="_int">
+		UPDATE POINT_WALLET
+		SET NOW_POINT = NOW_POINT + 500,
+		UPDATED_AT = SYSDATE
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+<!--포인트 차감-->
+	<update id="deductPoint" parameterType="_int">
+		UPDATE POINT_WALLET
+		SET NOW_POINT = NOW_POINT - 1000,
+		UPDATED_AT = SYSDATE
+		WHERE MEMBER_ID = #{memberId}
+		AND NOW_POINT >= 1000
+	</update>
+  
+</mapper>

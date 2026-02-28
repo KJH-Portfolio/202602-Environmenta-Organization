@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.spring.quiz.mapper.QuizMapper">
+
+    <select id="selectQuizListByDifficulty" resultType="com.kh.spring.quiz.model.vo.Quiz">
+        SELECT 
+            QUIZ_NO,
+            DIFFICULTY,
+            POINT,
+            QUIZ_QUESTION,
+            OPTION1,
+            OPTION2,
+            OPTION3,
+            OPTION4,
+            QUIZ_ANSWER,
+            QUIZ_EXPLANATION
+        FROM QUIZ
+        WHERE DIFFICULTY = #{difficulty}
+    </select>
+
+    <select id="countTodayAttempts" resultType="int">
+        SELECT COUNT(DISTINCT TRUNC(QH.CREATED_AT))
+        FROM QUIZ_HISTORY QH
+        JOIN QUIZ Q ON QH.QUIZ_NO = Q.QUIZ_NO
+        WHERE QH.MEMBER_ID = #{userId}
+          AND Q.DIFFICULTY = #{difficulty}
+          AND TRUNC(QH.CREATED_AT) = TRUNC(SYSDATE)
+    </select>
+
+    <insert id="insertQuizHistory">
+        INSERT INTO QUIZ_HISTORY (
+            HISTORY_ID,
+            MEMBER_ID,
+            QUIZ_NO,
+            CORRECT_YN,
+            CREATED_AT
+        ) VALUES (
+            SEQ_QUIZ_HISTORY_NO.NEXTVAL,
+            #{userId},
+            #{quizNo},
+            #{correctYn},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="updateMemberPoints">
+        UPDATE POINT_WALLET
+        SET NOW_POINT = NOW_POINT + #{points},
+            TOTAL_EARNED_POINT = TOTAL_EARNED_POINT + #{points},
+            UPDATED_AT = SYSDATE
+        WHERE MEMBER_ID = #{userId}
+    </update>
+    <!-- 퀴즈 번호로 개별 퀴즈 조회 -->
+    <select id="selectQuizByNo" resultType="com.kh.spring.quiz.model.vo.Quiz">
+        SELECT QUIZ_NO, DIFFICULTY, POINT, QUIZ_QUESTION,
+               OPTION1, OPTION2, OPTION3, OPTION4,
+               QUIZ_ANSWER, QUIZ_EXPLANATION
+        FROM QUIZ
+        WHERE QUIZ_NO = #{quizNo}
+    </select>
+
+</mapper>

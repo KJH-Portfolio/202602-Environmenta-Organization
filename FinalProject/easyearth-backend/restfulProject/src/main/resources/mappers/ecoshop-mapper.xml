@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ecoShopMapper">
+
+    <select id="reviewList" resultType="ReviewerName">
+        SELECT ESR_ID, ECO_SHOP_REVIEW.STATUS, SHOP_ID, RATING, CONTENT, NAME, MEMBER.MEMBER_ID, ECO_SHOP_REVIEW.CREATED_AT
+        FROM ECO_SHOP_REVIEW
+        JOIN MEMBER ON ECO_SHOP_REVIEW.MEMBER_ID = MEMBER.MEMBER_ID
+        WHERE SHOP_ID = #{shopId}
+    </select>
+<!-- 테마 아이디(ex. 11103395)로 ESC_ID(테마 식별자 ex.4) 찾기       -->
+    <select id="getEscIdByThemeId" parameterType="string" resultType="long">
+        SELECT ESC_ID
+        FROM ECO_SHOP_CATEGORY
+        WHERE CONTS_ID = #{themeId}
+    </select>
+<!-- Shop을 이미 저장했는지 확인-->
+    <select id="checkDuplicate" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM ECO_SHOP
+        WHERE CONTS_ID = #{contsId}
+    </select>
+<!--Shop 삽입-->
+    <insert id="insertEcoShop" parameterType="com.kh.spring.ecoshop.vo.EcoShop">
+        <selectKey keyProperty="shopId" resultType="int" order="BEFORE">
+            SELECT SEQ_SHOP_ID.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO ECO_SHOP (
+        SHOP_ID, NAME, ADDRESS, PHONE, LAT, LNG, CONTS_ID, ESC_ID
+        ) VALUES (
+        #{shopId}, #{name}, #{address}, #{phone}, #{lat}, #{lng}, #{contsId}, #{escId}
+        )
+    </insert>
+<!--리뷰 작성-->
+    <insert id="reviewInsert" parameterType="com.kh.spring.ecoshop.vo.EcoShop">
+        INSERT INTO ECO_SHOP_REVIEW (
+        SHOP_ID, RATING, CONTENT, MEMBER_ID, CREATED_AT, UPDATED_AT
+        ) VALUES (
+        #{shopId}, #{rating}, #{content}, #{memberId}, SYSDATE, SYSDATE
+        )
+    </insert>
+<!-- 리뷰 Detail 불러오기-->
+    <select id="reviewDetail" resultType="com.kh.spring.ecoshop.vo.Review" parameterType="_int">
+        SELECT
+            ESR_ID, SHOP_ID, RATING, CONTENT, CREATED_AT, UPDATED_AT, MEMBER_ID
+        FROM ECO_SHOP_REVIEW WHERE ESR_ID = #{esrId}
+    </select>
+<!--리뷰 삭제-->
+    <delete id="reviewDelete" parameterType="_int">
+        DELETE FROM ECO_SHOP_REVIEW
+        WHERE
+        ESR_ID = #{esrId}
+    </delete>
+
+    <update id="reviewUpdate" parameterType="Review">
+        UPDATE ECO_SHOP_REVIEW
+        SET RATING = #{rating}
+        , CONTENT = #{content}
+        WHERE ESR_ID = #{esrId}
+    </update>
+<!--    평균평점 가져오기-->
+    <select id="getAverageRating" parameterType="string" resultType="double">
+        SELECT NVL(AVG(RATING), 0)
+        FROM ECO_SHOP_REVIEW R
+        JOIN ECO_SHOP S ON R.SHOP_ID = S.SHOP_ID
+        WHERE S.CONTS_ID = #{contsId}
+    </select>
+<!--리뷰 개수-->
+    <select id="getReviewCount" parameterType="string" resultType="_int">
+        SELECT COUNT(*)
+        FROM ECO_SHOP_REVIEW R
+        JOIN ECO_SHOP S ON R.SHOP_ID = S.SHOP_ID
+        WHERE S.CONTS_ID = #{contsId}
+    </select>
+
+    <select id = "findShopIdByContsId" parameterType="string" resultType="_int">
+        SELECT NVL(MAX(SHOP_ID), 0) -- 데이터가 없으면 null 대신 0을 반환
+        FROM ECO_SHOP
+        WHERE CONTS_ID = #{contsId}
+    </select>
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="memberMapper">
+
+  	<!-- 회원 회원가입 매퍼 -->
+    <insert id="insertMember" parameterType="com.kh.spring.member.model.vo.MemberVO">
+	  INSERT INTO MEMBER (
+	      MEMBER_ID,
+	      LOGIN_ID,
+	      PASSWORD,
+	      NAME,
+	      BIRTHDAY,
+	      GENDER,
+	      ADDRESS,
+	      STATUS,
+	      QUIZ_ATTEMPT_COUNT,
+	      QUIZ_CORRECT_COUNT,
+	      CREATED_AT,
+	      UPDATE_AT,
+	      STATUS_MESSAGE
+	  )
+	  VALUES (
+	      MEMBER_SEQ.NEXTVAL,
+	      #{loginId},
+	      #{password},
+	      #{name},
+	      #{birthday},
+	      #{gender},
+	      #{address},
+	      NVL(#{status},'ACTIVE'),
+	      0,
+	      0,
+	      SYSDATE,
+	      SYSDATE,
+	      #{statusMessage}
+	  )
+	</insert>
+	
+	<!-- 아이디 중복체크 매퍼 -->
+	<select id="checkId" parameterType="string" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE LOGIN_ID = #{loginId}
+	</select>
+	
+	
+	<!-- 회원 로그인 매퍼 -->
+	<select id="loginMember" parameterType="MemberVO" resultType="MemberVO">
+		SELECT MEMBER_ID,
+		      LOGIN_ID,
+		      PASSWORD,
+		      NAME,
+		      BIRTHDAY,
+		      GENDER,
+		      ADDRESS,
+		      STATUS,
+		      QUIZ_ATTEMPT_COUNT,
+		      QUIZ_CORRECT_COUNT,
+		      CREATED_AT,
+		      UPDATE_AT,
+		      STATUS_MESSAGE,
+		      PROFILE_IMAGE_URL
+		FROM MEMBER
+		WHERE LOGIN_ID = #{loginId}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="findPassword" parameterType="MemberVO" resultType="MemberVO">
+		SELECT * 
+		FROM MEMBER 
+    	WHERE LOGIN_ID = #{loginId} 
+      	AND NAME = #{name}
+	</select>
+	
+	<!-- 회원 정보 수정 매퍼 -->
+	<update id="updateMember" parameterType="MemberVO">
+	    UPDATE MEMBER
+	    <set>
+	        <if test="password != null and password != ''">
+	            PASSWORD = #{password},
+	        </if>
+	        <if test="name != null">
+	            NAME = #{name},
+	        </if>
+	        <if test="birthday != null">
+	            BIRTHDAY = #{birthday},
+	        </if>
+	        <if test="gender != null">
+	            GENDER = #{gender},
+	        </if>
+	        <if test="address != null">
+	            ADDRESS = #{address},
+	        </if>
+	        <if test="statusMessage != null"> STATUS_MESSAGE = #{statusMessage},
+	        </if>
+	        UPDATE_AT = SYSDATE
+	    </set>
+	    WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<!-- 회원 탈퇴 매퍼 -->
+	<delete id="deleteMember" parameterType="string">
+		DELETE MEMBER
+		WHERE MEMBER_ID = #{memberId}
+	</delete>
+	
+	<!-- 회원 정보 조회 매퍼 -->
+	<select id="selectMemberById" parameterType="int" resultType="MemberVO">
+	    SELECT *
+	    FROM MEMBER
+	    WHERE MEMBER_ID = #{memberId}
+	</select>
+
+	<!--장착 아이템 조회-->
+	<select id ="equippedItem" parameterType="string" resultType="int">
+		SELECT ITEM_ID
+		FROM USER_ITEMS
+		WHERE USER_ID = #{memberId} AND IS_EQUIPPED = 'Y'
+	</select>
+
+	<select id = "getMemberPoint" parameterType="int" resultType="MemberWalletVO">
+		SELECT
+		WALLET_ID, NOW_POINT,
+		TOTAL_EARNED_POINT,
+		TOTAL_SPENT_POINT
+		FROM POINT_WALLET WHERE MEMBER_ID=#{memberId}
+	</select>
+
+	<select id="getMemberDetail" parameterType="int" resultType="MemberDetailVO">
+		SELECT
+			M.MEMBER_ID,
+			M.LOGIN_ID,
+			M.NAME,
+			M.QUIZ_CORRECT_COUNT,
+			M.QUIZ_ATTEMPT_COUNT,
+			M.BIRTHDAY,
+			M.GENDER,
+			M.ADDRESS,
+			TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT,
+			TO_CHAR(M.UPDATE_AT, 'YYYY-MM-DD') AS UPDATE_AT,
+			M.IS_ONLINE,
+			M.STATUS_MESSAGE,
+			(SELECT COUNT(*)
+		FROM ECO_SHOP_REVIEW R
+			WHERE R.MEMBER_ID = M.MEMBER_ID) AS REVIEW_COUNT
+		FROM
+			MEMBER M
+		WHERE
+			M.MEMBER_ID = #{memberId}
+	</select>
+	
+	<!-- 온라인 상태 업데이트 -->
+	<update id="updateOnlineStatus" parameterType="hashmap">
+		UPDATE MEMBER
+		SET IS_ONLINE = #{isOnline}
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+  
+</mapper>

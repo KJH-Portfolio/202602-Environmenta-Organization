@@ -1,0 +1,356 @@
+/* ShopPage.module.css */
+
+/* ---------------------------------------------------------
+   0. 상단 포인트 표시 레이아웃
+--------------------------------------------------------- */
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.userPointDisplay {
+  background: white;
+  padding: 10px 22px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.1);
+  border: 2px solid #14b8a6;
+  transition: transform 0.2s ease;
+}
+
+.userPointDisplay:hover {
+  transform: scale(1.05);
+}
+
+.pointLabel {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.pointValue {
+  font-size: 20px;
+  font-weight: 900;
+  color: #14b8a6;
+  display: flex;
+  align-items: center;
+}
+
+.coinIcon {
+  width: 24px;
+  height: 24px;
+  background: #fbbf24;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  font-style: normal;
+  margin-right: 6px;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+}
+
+/* ---------------------------------------------------------
+   1. 기본 레이아웃 및 컨테이너
+--------------------------------------------------------- */
+.container { 
+  max-width: 1100px; 
+  margin: 0 auto; 
+  padding: 40px 20px; 
+  font-family: 'Pretendard', sans-serif; 
+}
+
+.pageTitle { 
+  font-size: 32px; 
+  font-weight: 900; 
+  color: #1e293b; 
+  margin: 0; 
+  text-align: left; 
+}
+
+.gachaBanner {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border: 2px dashed #99f6e4; 
+  border-radius: 30px;
+  padding: 45px 20px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center;
+  gap: 25px; 
+  margin-bottom: 50px; 
+  box-shadow: 0 10px 25px rgba(20, 184, 166, 0.05);
+}
+
+.gachaText h3 { font-weight: 900; color: #0f766e; font-size: 28px; margin: 0; }
+.gachaText p { color: #64748b; font-size: 16px; margin: 0; }
+
+/* 🌟 버튼 텍스트 중앙 정렬 및 흰색 고정 */
+.buyBtnText, .btnText {
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;      /* 텍스트 줄높이 제거로 수직 중앙 확보 */
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.filterWrapper { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
+  background: #f8fafc; 
+  padding: 25px; 
+  border-radius: 20px; 
+  margin-bottom: 40px; 
+}
+
+.filterGroup { display: flex; align-items: center; gap: 20px; }
+.filterLabel { font-weight: 800; color: #64748b; font-size: 14px; min-width: 55px; }
+.categoryBar { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.categoryTab { 
+  padding: 8px 18px; 
+  border-radius: 20px; 
+  border: 1px solid #e2e8f0; 
+  background: white; 
+  font-weight: 700; 
+  cursor: pointer; 
+  color: #94a3b8; 
+  font-size: 14px; 
+  transition: all 0.2s ease; 
+}
+
+.categoryTab.active { background: #14b8a6; color: white; border-color: #14b8a6; }
+
+/* ---------------------------------------------------------
+   2. 아이템 카드 스타일
+--------------------------------------------------------- */
+.itemGrid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+  gap: 25px; 
+}
+
+.itemCard {
+  background: white; 
+  border-radius: 20px; 
+  border: 1px solid #f1f5f9;
+  overflow: hidden; 
+  display: flex; 
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  cursor: pointer;
+  position: relative; 
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(10px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.itemCard:hover { 
+  transform: translateY(-10px); 
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+}
+
+.legendary { border-top: 6px solid #f59e0b !important; }
+.epic { border-top: 6px solid #8b5cf6 !important; }
+.rare { border-top: 6px solid #3b82f6 !important; }
+.common { border-top: 6px solid #94a3b8 !important; }
+
+.imageArea { 
+  height: 180px; 
+  background: #fff; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  position: relative; 
+  overflow: hidden; 
+}
+
+.badgeImg { 
+  max-width: 65%; 
+  max-height: 110px; 
+  object-fit: contain; 
+  z-index: 1; 
+  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.15)); 
+}
+
+.rarityTag { 
+  position: absolute; 
+  top: 15px; 
+  right: 15px; 
+  font-size: 11px; 
+  font-weight: 800; 
+  padding: 4px 10px; 
+  border-radius: 12px; 
+  background: rgba(255, 255, 255, 0.9); 
+  z-index: 10; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+}
+
+/* ---------------------------------------------------------
+   3. 카드 정보 영역
+--------------------------------------------------------- */
+.infoArea { 
+  padding: 20px; 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  background: #fff; 
+  z-index: 2; 
+}
+
+.itemName { 
+  font-size: 18px; 
+  font-weight: 800; 
+  color: #1e293b; 
+  margin-bottom: 12px; 
+  height: 48px; 
+  line-height: 1.4; 
+}
+
+.cardFooter { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-top: 1px solid #f1f5f9; 
+  padding-top: 15px; 
+  margin-top: auto; 
+}
+
+.priceTag { 
+  font-weight: 900; 
+  color: #0d9488; 
+  font-size: 18px; 
+  display: flex; 
+  align-items: center; 
+}
+
+.ownedLabel { 
+  color: #94a3b8; 
+  font-size: 13px; 
+  font-weight: 600; 
+  background-color: #f1f5f9; 
+  padding: 6px 12px; 
+  border-radius: 10px; 
+}
+
+/* ---------------------------------------------------------
+   4. 뽑기 애니메이션 및 결과 오버레이
+--------------------------------------------------------- */
+.pullOverlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.9); 
+  z-index: 3000; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  perspective: 1200px; 
+  backdrop-filter: blur(8px); 
+}
+
+.pullCard { 
+  width: 300px; 
+  height: 450px; 
+  position: relative; 
+  transform-style: preserve-3d; 
+  transition: 0.8s; 
+}
+
+.pullCard.isFlipped { transform: rotateY(180deg); }
+
+.cardFront, .cardBack { 
+  position: absolute; 
+  inset: 0; 
+  backface-visibility: hidden; 
+  border-radius: 25px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  overflow: visible; 
+}
+
+.cardFront { 
+  background: linear-gradient(135deg, #14b8a6, #0f766e); 
+  color: white; 
+  justify-content: center; 
+  font-size: 80px; 
+  font-weight: 900; 
+  border: 4px solid #fbbf24; 
+}
+
+.cardBack { 
+  background: white; 
+  transform: rotateY(180deg); 
+  padding: 30px; 
+  text-align: center; 
+  justify-content: space-between; 
+  border: 2px solid #e2e8f0; 
+}
+
+/* 등급별 애니메이션 효과 */
+.res_legendary { animation: glow_legendary 1.5s infinite ease-in-out; border: 4px solid #f59e0b !important; }
+.res_epic { animation: glow_epic 2s infinite ease-in-out; border: 3px solid #8b5cf6 !important; }
+.res_rare { animation: glow_rare 2s infinite ease-in-out; border: 3px solid #3b82f6 !important; }
+.res_common { animation: glow_common 2.5s infinite ease-in-out; border: 2px solid #94a3b8 !important; }
+
+@keyframes glow_legendary {
+  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b; }
+  50% { box-shadow: 0 0 60px #fbbf24, 0 0 100px #fbbf24; }
+}
+
+@keyframes glow_epic {
+  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6; }
+  50% { box-shadow: 0 0 50px #a78bfa, 0 0 80px #a78bfa; }
+}
+
+@keyframes glow_rare {
+  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6; }
+  50% { box-shadow: 0 0 40px #60a5fa, 0 0 60px #60a5fa; }
+}
+
+@keyframes glow_common {
+  0%, 100% { box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; }
+  50% { box-shadow: 0 0 30px #86efac, 0 0 40px #86efac; }
+}
+
+.resultVisual { 
+  width: 100%; 
+  height: 200px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  position: relative; 
+}
+
+.statusMsg { 
+  grid-column: 1 / -1; 
+  text-align: center; 
+  padding: 100px 0; 
+  color: #94a3b8; 
+  font-size: 18px; 
+}
+
+.duplicateMsg { 
+  color: #ef4444; 
+  font-weight: 800; 
+  font-size: 14px; 
+  margin: 10px 0; 
+}

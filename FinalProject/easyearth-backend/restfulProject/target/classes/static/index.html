@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EasyEarth</title>
+<style>
+/* ─── Reset ─── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+/* ─── Body ─── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(145deg, #0f3d2e 0%, #1b5e40 40%, #2e7d56 100%);
+  min-height: 100vh;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* ─── Hero (center) ─── */
+.hero {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+.hero h1 {
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-shadow: 0 3px 16px rgba(0,0,0,.35);
+}
+.hero p {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  opacity: .7;
+}
+
+/* ─── Sidebar Tabs ─── */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 15px 20px 15px 14px;
+  background: rgba(255,255,255,.13);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.18);
+  border-left: none;
+  border-radius: 0 14px 14px 0;
+  color: #fff;
+  font-size: .96rem;
+  font-weight: 600;
+  letter-spacing: .3px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px rgba(0,0,0,.22);
+  transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
+  user-select: none;
+}
+.tab:hover {
+  background: rgba(255,255,255,.24);
+  transform: translateX(8px);
+  box-shadow: 5px 4px 14px rgba(0,0,0,.3);
+}
+.tab .icon { font-size: 1.25rem; line-height: 1; }
+
+/* ─── Modal Overlay ─── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.overlay.open { display: flex; }
+
+/* ─── Modal Box ─── */
+.modal {
+  background: #fff;
+  border-radius: 22px;
+  width: 92%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  color: #333;
+  box-shadow: 0 28px 70px rgba(0,0,0,.4);
+  animation: slideUp .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ─── Modal Header ─── */
+.modal-head {
+  background: linear-gradient(135deg, #1b5e40, #43a376);
+  color: #fff;
+  padding: 22px 26px 18px;
+  border-radius: 22px 22px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-head h2 { font-size: 1.45rem; }
+.modal-close {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+}
+.modal-close:hover { background: rgba(255,255,255,.38); }
+
+/* ─── Modal Body ─── */
+.modal-body { padding: 24px 26px 28px; }
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #43a376;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 28px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .14s, box-shadow .2s, background .2s;
+}
+.btn:active { transform: scale(.96); }
+.btn-green {
+  background: linear-gradient(135deg, #1b5e40, #43a376);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(27,94,64,.35);
+}
+.btn-green:hover { box-shadow: 0 5px 16px rgba(27,94,64,.45); }
+.btn-outline {
+  background: transparent;
+  border: 2px solid #1b5e40;
+  color: #1b5e40;
+}
+.btn-outline:hover { background: #1b5e40; color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ═══════════════════════════════════════════════
+   QUIZ
+   ═══════════════════════════════════════════════ */
+.diff-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.diff-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border: 2px solid #e2e2e2;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, background .2s;
+}
+.diff-btn:hover { border-color: #43a376; background: #f0faf5; }
+.diff-btn .d-label { font-weight: 700; font-size: .98rem; }
+.diff-btn .d-pt    { font-size: .78rem; color: #999; display: block; margin-top: 3px; }
+.diff-btn.easy .d-label { color: #2e7d56; }
+.diff-btn.normal .d-label { color: #e76f51; }
+.diff-btn.hard   .d-label { color: #c62828; }
+
+.quiz-prog { font-size: .82rem; color: #888; margin-bottom: 10px; }
+.quiz-q    { font-size: 1.08rem; font-weight: 600; color: #222; line-height: 1.5; margin-bottom: 16px; }
+
+.options { display: flex; flex-direction: column; gap: 9px; }
+.option {
+  padding: 13px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: .94rem;
+  transition: border-color .2s, background .2s;
+}
+.option:hover { border-color: #43a376; background: #f0faf5; }
+.option.correct  { border-color: #43a376; background: #d8f3dc; color: #1b5e40; font-weight: 600; }
+.option.wrong    { border-color: #c62828; background: #ffebee; color: #c62828; font-weight: 600; }
+.option.reveal   { border-color: #43a376; background: #d8f3dc; }
+.option.disabled { pointer-events: none; }
+
+.expl {
+  margin-top: 14px;
+  padding: 11px 15px;
+  background: #f1f8f4;
+  border-radius: 8px;
+  border-left: 3px solid #43a376;
+  font-size: .87rem;
+  color: #555;
+}
+.nav-row { margin-top: 18px; text-align: right; }
+
+/* result */
+.result-box { text-align: center; padding: 12px 0 8px; }
+.result-box .big-score { font-size: 3rem; font-weight: 700; color: #1b5e40; }
+.result-box .sub      { color: #888; font-size: .9rem; margin-top: 4px; }
+.result-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+
+/* ═══════════════════════════════════════════════
+   QUEST
+   ═══════════════════════════════════════════════ */
+.quest-list { display: flex; flex-direction: column; gap: 12px; }
+.quest-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #fafafa;
+  transition: box-shadow .2s;
+}
+.quest-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+.quest-card h4   { font-size: .94rem; color: #222; margin-bottom: 4px; }
+.quest-meta      { font-size: .79rem; color: #999; }
+.pt-badge {
+  display: inline-block;
+  background: #d8f3dc;
+  color: #1b5e40;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: .78rem;
+  margin-left: 6px;
+}
+.btn-certify {
+  white-space: nowrap;
+  padding: 9px 17px;
+  background: #43a376;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.btn-certify:hover  { background: #1b5e40; }
+.btn-certify.done   { background: #aaa; cursor: default; }
+.file-input         { display: none; }
+
+.quest-msg {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: .87rem;
+  display: none;
+}
+.quest-msg.ok   { display: block; background: #d8f3dc; color: #1b5e40; }
+.quest-msg.fail { display: block; background: #ffebee; color: #c62828; }
+
+/* ═══════════════════════════════════════════════
+   ATTENDANCE
+   ═══════════════════════════════════════════════ */
+.att-checkin {
+  background: #f0faf5;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.att-checkin .streak     { font-size: .88rem; color: #555; margin-bottom: 10px; }
+.att-checkin .streak em  { font-style: normal; font-weight: 700; color: #1b5e40; font-size: 1.05rem; }
+.att-msg { margin-top: 10px; font-size: .88rem; font-weight: 600; min-height: 1.2em; }
+.att-msg.ok   { color: #1b5e40; }
+.att-msg.fail { color: #e76f51; }
+
+/* calendar */
+.cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cal-nav button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 32px; height: 32px;
+  font-size: 1rem;
+  color: #555;
+  cursor: pointer;
+  transition: background .2s;
+}
+.cal-nav button:hover  { background: #f0f0f0; }
+.cal-nav .cal-label    { font-weight: 600; color: #333; font-size: .95rem; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-hdr {
+  text-align: center;
+  font-size: .76rem;
+  color: #999;
+  font-weight: 600;
+  padding: 5px 0;
+}
+.cal-day {
+  text-align: center;
+  padding: 8px 2px;
+  border-radius: 8px;
+  font-size: .87rem;
+  color: #666;
+}
+.cal-day.att   { background: #d8f3dc; color: #1b5e40; font-weight: 700; }
+.cal-day.today { outline: 2px solid #43a376; font-weight: 700; color: #1b5e40; }
+.cal-day.today.att { background: #1b5e40; color: #fff; outline-color: #1b5e40; }
+</style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>🌍 EasyEarth</h1>
+  <p>왼쪽 탭을 클릭하여 이용하세요</p>
+</div>
+
+<!-- ── Sidebar Tabs ── -->
+<aside class="sidebar">
+  <div class="tab" onclick="open('quiz')">
+    <span class="icon">📝</span> 퀴즈
+  </div>
+  <div class="tab" onclick="open('quest')">
+    <span class="icon">🌱</span> 퀘스트
+  </div>
+  <div class="tab" onclick="open('attendance')">
+    <span class="icon">📅</span> 출석
+  </div>
+</aside>
+
+<!-- ══════════════ QUIZ MODAL ══════════════ -->
+<div class="overlay" id="m-quiz">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📝 환경 퀴즈</h2>
+      <button class="modal-close" onclick="close('quiz')">✕</button>
+    </div>
+    <div class="modal-body" id="quiz-body">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ QUEST MODAL ══════════════ -->
+<div class="overlay" id="m-quest">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>🌱 데일리 퀘스트</h2>
+      <button class="modal-close" onclick="close('quest')">✕</button>
+    </div>
+    <div class="modal-body" id="quest-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ATTENDANCE MODAL ══════════════ -->
+<div class="overlay" id="m-attendance">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📅 출석</h2>
+      <button class="modal-close" onclick="close('attendance')">✕</button>
+    </div>
+    <div class="modal-body" id="att-body">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   BASE & HELPERS
+   ═══════════════════════════════════════════════ */
+const B = '/spring';                          // context-path
+
+function open(id) {
+  document.getElementById('m-' + id).classList.add('open');
+  if (id === 'quiz')       initQuiz();
+  if (id === 'quest')      loadQuests();
+  if (id === 'attendance') loadAtt();
+}
+function close(id) {
+  document.getElementById('m-' + id).classList.remove('open');
+}
+// overlay 클릭 시 닫기
+document.querySelectorAll('.overlay').forEach(el =>
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); })
+);
+
+/* ═══════════════════════════════════════════════
+   QUIZ
+   ═══════════════════════════════════════════════ */
+let Q = { data:[], idx:0, score:0, picks:[] };
+
+function initQuiz() {
+  Q = { data:[], idx:0, score:0, picks:[] };
+  document.getElementById('quiz-body').innerHTML = `
+    <p style="margin-bottom:14px;color:#555;font-weight:600">난이도를 선택하세요</p>
+    <div class="diff-row">
+      <div class="diff-btn easy"   onclick="startQuiz('Easy')">
+        <span class="d-label">🟢 Easy</span><span class="d-pt">10P / 문제</span>
+      </div>
+      <div class="diff-btn normal" onclick="startQuiz('Normal')">
+        <span class="d-label">🟠 Normal</span><span class="d-pt">20P / 문제</span>
+      </div>
+      <div class="diff-btn hard"   onclick="startQuiz('Hard')">
+        <span class="d-label">🔴 Hard</span><span class="d-pt">50P / 문제</span>
+      </div>
+    </div>`;
+}
+
+async function startQuiz(diff) {
+  document.getElementById('quiz-body').innerHTML = '<div class="spinner"></div>';
+  try {
+    const r = await fetch(B + '/api/quiz/' + diff);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    Q.data  = await r.json();
+    Q.idx   = 0;
+    Q.score = 0;
+    Q.picks = new Array(Q.data.length).fill(null);
+    renderQ();
+  } catch (e) {
+    document.getElementById('quiz-body').innerHTML =
+      '<p style="text-align:center;color:#c62828;padding:20px 0">퀴즈 로딩 실패: ' + e.message + '</p>';
+  }
+}
+
+function renderQ() {
+  if (Q.idx >= Q.data.length) return showResult();
+  const q   = Q.data[Q.idx];
+  const opts = [q.option1, q.option2, q.option3, q.option4];
+  document.getElementById('quiz-body').innerHTML = `
+    <div class="quiz-prog">${Q.idx + 1} / ${Q.data.length} &nbsp;·&nbsp; 점수: ${Q.score}P</div>
+    <div class="quiz-q">${q.quizQuestion}</div>
+    <div class="options" id="opts">
+      ${opts.map((t, i) => `<div class="option" id="o${i}" onclick="pick(${i + 1})">${i + 1}. ${t}</div>`).join('')}
+    </div>
+    <div id="expl" style="display:none"></div>
+    <div class="nav-row" id="nav" style="display:none"></div>`;
+}
+
+function pick(sel) {
+  if (Q.picks[Q.idx] !== null) return;
+  Q.picks[Q.idx] = sel;
+  const q = Q.data[Q.idx];
+  // 모든 옵션 클릭 불가
+  document.querySelectorAll('.option').forEach(el => el.classList.add('disabled'));
+
+  if (sel === q.quizAnswer) {
+    document.getElementById('o' + (sel - 1)).classList.add('correct');
+    Q.score += q.point;
+  } else {
+    document.getElementById('o' + (sel - 1)).classList.add('wrong');
+    document.getElementById('o' + (q.quizAnswer - 1)).classList.add('reveal');
+  }
+  // 풀이
+  document.getElementById('expl').style.display = 'block';
+  document.getElementById('expl').innerHTML = `<div class="expl">💡 ${q.quizExplanation}</div>`;
+  // 다음 버튼
+  const last = Q.idx === Q.data.length - 1;
+  document.getElementById('nav').style.display = 'block';
+  document.getElementById('nav').innerHTML =
+    `<button class="btn btn-green" onclick="${last ? 'showResult()' : 'Q.idx++; renderQ();'}">${last ? '결과 보기' : '다음 →'}</button>`;
+}
+
+function showResult() {
+  const total   = Q.data.reduce((s, q) => s + q.point, 0);
+  const correct = Q.data.filter((q, i) => Q.picks[i] === q.quizAnswer).length;
+  document.getElementById('quiz-body').innerHTML = `
+    <div class="result-box">
+      <div style="font-size:3.2rem">🎉</div>
+      <div class="big-score">${Q.score}P</div>
+      <div class="sub">획득 포인트 (최대 ${total}P)</div>
+      <div class="sub" style="margin-top:6px"><strong style="color:#1b5e40">${correct}문제</strong> 정답 / ${Q.data.length}문제</div>
+      <div class="result-btns">
+        <button class="btn btn-green"   onclick="initQuiz()">다시 시작</button>
+        <button class="btn btn-outline" onclick="close('quiz')">닫기</button>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   QUEST
+   ═══════════════════════════════════════════════ */
+const submitted = {};                         // questNo → true
+
+async function loadQuests() {
+  document.getElementById('quest-body').innerHTML = '<div class="spinner"></div>';
+  try {
+    const r = await fetch(B + '/api/quest/daily');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const list = await r.json();
+    if (!list.length) {
+      document.getElementById('quest-body').innerHTML =
+        '<p style="text-align:center;color:#999;padding:28px 0">오늘의 퀘스트가 없습니다.</p>';
+      return;
+    }
+    document.getElementById('quest-body').innerHTML =
+      '<div class="quest-list" id="qlist"></div><div class="quest-msg" id="qmsg"></div>';
+    const wrap = document.getElementById('qlist');
+    list.forEach(q => {
+      wrap.innerHTML += `
+        <div class="quest-card" id="qc${q.questNo}">
+          <div>
+            <h4>${q.questTitle}</h4>
+            <div class="quest-meta">카테고리: ${q.category || '-'}<span class="pt-badge">${q.point}P</span></div>
+          </div>
+          <button class="btn-certify ${submitted[q.questNo]?'done':''}"
+                  onclick="triggerFile(${q.questNo})">
+            ${submitted[q.questNo] ? '완료' : '인증'}
+          </button>
+        </div>
+        <input type="file" class="file-input" id="fi${q.questNo}" accept="image/*"
+               onchange="uploadFile(${q.questNo}, this)" />`;
+    });
+  } catch (e) {
+    document.getElementById('quest-body').innerHTML =
+      '<p style="text-align:center;color:#c62828;padding:20px 0">퀘스트 로딩 실패: ' + e.message + '</p>';
+  }
+}
+
+function triggerFile(no) {
+  if (submitted[no]) return;
+  document.getElementById('fi' + no).click();
+}
+
+async function uploadFile(no, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const btn = document.querySelector(`#qc${no} .btn-certify`);
+  btn.textContent = '업로드중…';  btn.style.background = '#aaa';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r   = await fetch(B + '/api/quest/certify/' + no, { method:'POST', body: fd });
+    const msg = await r.text();
+    if (r.ok) {
+      submitted[no]    = true;
+      btn.textContent  = '완료';
+      btn.className    = 'btn-certify done';
+      showQMsg(msg, true);
+    } else {
+      btn.textContent  = '인증';
+      btn.style.background = '';
+      showQMsg(msg, false);
+    }
+  } catch (e) {
+    btn.textContent  = '인증';
+    btn.style.background = '';
+    showQMsg('업로드 실패. 다시 시도해주세요.', false);
+  }
+  input.value = '';
+}
+
+function showQMsg(text, ok) {
+  const el = document.getElementById('qmsg');
+  el.textContent = text;
+  el.className   = 'quest-msg ' + (ok ? 'ok' : 'fail');
+}
+
+/* ═══════════════════════════════════════════════
+   ATTENDANCE
+   ═══════════════════════════════════════════════ */
+const UID = 1;                                // 테스트용 유저 ID
+let attY, attM, attDates;                     // 현재 캘린더 연·월, 출석날짜 Set
+
+async function loadAtt() {
+  const now = new Date();
+  attY = now.getFullYear();
+  attM = now.getMonth();     // 0-based
+  await fetchAttAndRender();
+}
+
+async function fetchAttAndRender() {
+  const ym = attY + '-' + String(attM + 1).padStart(2, '0');
+  try {
+    const r    = await fetch(B + '/attendance/list?userId=' + UID + '&yearMonth=' + ym);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const list = await r.json();
+
+    attDates = new Set();
+    let streak = 0;
+    list.forEach(a => {
+      const d = new Date(a.attendanceDate);
+      attDates.add(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
+      streak = a.consecutiveDays || 0;     // ASC 정렬 → 마지막이 최신
+    });
+    renderAtt(streak);
+  } catch (e) {
+    document.getElementById('att-body').innerHTML =
+      '<p style="text-align:center;color:#c62828;padding:20px 0">출석 정보 로딩 실패: ' + e.message + '</p>';
+  }
+}
+
+function renderAtt(streak) {
+  document.getElementById('att-body').innerHTML = `
+    <div class="att-checkin">
+      <div class="streak">연속 출석: <em>${streak}일</em></div>
+      <button class="btn btn-green" id="chkBtn" onclick="doCheck()">📌 출석 체크</button>
+      <div class="att-msg" id="attMsg"></div>
+    </div>
+    <div class="cal-nav">
+      <button onclick="changeM(-1)">◀</button>
+      <span class="cal-label">${attY}년 ${attM + 1}월</span>
+      <button onclick="changeM(1)">▶</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>`;
+  buildCal();
+}
+
+function buildCal() {
+  const headers = ['일','월','화','수','목','금','토'];
+  let html = headers.map(h => `<div class="cal-hdr">${h}</div>`).join('');
+
+  const firstDay   = new Date(attY, attM, 1).getDay();
+  const daysInMonth = new Date(attY, attM + 1, 0).getDate();
+  const today       = new Date();
+  const todayKey    = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = attY + '-' + String(attM+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    let cls   = 'cal-day';
+    if (attDates.has(key))  cls += ' att';
+    if (key === todayKey)   cls += ' today';
+    html += `<div class="${cls}">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+async function changeM(delta) {
+  attM += delta;
+  if (attM < 0)  { attM = 11; attY--; }
+  if (attM > 11) { attM = 0;  attY++; }
+  await fetchAttAndRender();
+}
+
+async function doCheck() {
+  const btn = document.getElementById('chkBtn');
+  const msg = document.getElementById('attMsg');
+  btn.disabled = true;
+  btn.textContent = '처리 중…';
+  try {
+    const r  = await fetch(B + '/attendance/check?userId=' + UID, { method:'POST' });
+    const d  = await r.json();
+    if (d.status === 'success') {
+      msg.textContent = d.message;
+      msg.className   = 'att-msg ok';
+      await fetchAttAndRender();            // 캘린더 갱신
+    } else {
+      msg.textContent = d.message;
+      msg.className   = 'att-msg fail';
+      btn.disabled    = false;
+      btn.textContent = '📌 출석 체크';
+    }
+  } catch (e) {
+    msg.textContent = '출석 체크 실패. 다시 시도해주세요.';
+    msg.className   = 'att-msg fail';
+    btn.disabled    = false;
+    btn.textContent = '📌 출석 체크';
+  }
+}
+</script>
+</body>
+</html>

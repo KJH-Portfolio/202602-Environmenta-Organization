@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.spring.quest.model.dao.QuestMapper">
+
+    <resultMap id="questResultSet" type="com.kh.spring.quest.model.vo.Quest">
+        <id property="questNo" column="QUEST_NO"/>
+        <result property="questTitle" column="QUEST_TITLE"/>
+        <result property="point" column="POINT"/>
+        <result property="category" column="CATEGORY"/>
+        <result property="createdAt" column="CREATED_AT"/>
+    </resultMap>
+
+    <!-- 오늘의 퀘스트 조회 (일단 전체 조회, 나중에 랜덤 5개 등으로 수정 가능) -->
+    <select id="selectDailyQuests" resultMap="questResultSet">
+        SELECT *
+        FROM QUEST
+        ORDER BY QUEST_NO ASC
+    </select>
+
+    <!-- 특정 퀘스트 조회 -->
+    <select id="selectQuestByNo" resultMap="questResultSet">
+        SELECT * FROM QUEST WHERE QUEST_NO = #{questNo}
+    </select>
+
+    <!-- 퀘스트 인증 내역 저장 -->
+    <insert id="insertQuestHistory">
+        INSERT INTO QUEST_HISTORY (
+            HISTORY_ID,
+            MEMBER_ID,
+            QUEST_NO,
+            IMAGE_URL,
+            STATUS,
+            CREATED_AT
+        ) VALUES (
+            SEQ_QUEST_HISTORY_NO.NEXTVAL,
+            #{userId},
+            #{questNo},
+            #{savedFileName},
+            'Y',
+            SYSDATE
+        )
+    </insert>
+
+    <select id="countTodayQuests" resultType="int">
+        SELECT COUNT(*)
+        FROM QUEST_HISTORY
+        WHERE MEMBER_ID = #{userId}
+          AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+    </select>
+
+    <!-- 포인트 지급 (POINT_WALLET 테이블 수정) -->
+    <update id="updateMemberPoints">
+        UPDATE POINT_WALLET
+        SET NOW_POINT = NOW_POINT + #{points},
+            TOTAL_EARNED_POINT = TOTAL_EARNED_POINT + #{points},
+            UPDATED_AT = SYSDATE
+        WHERE MEMBER_ID = #{userId}
+    </update>
+    <!-- 오늘 특정 퀘스트 인증 여부 확인 -->
+    <select id="countTodayQuestByNo" resultType="int">
+        SELECT COUNT(*)
+        FROM QUEST_HISTORY
+        WHERE MEMBER_ID = #{userId}
+          AND QUEST_NO = #{questNo}
+          AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+    </select>
+
+</mapper>
+

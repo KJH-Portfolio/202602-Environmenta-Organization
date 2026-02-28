@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace = "reportsMapper">
+
+	<!-- 신고글 전체 개수 -->
+	<select id="reportListsCount" resultType="_int">
+		SELECT COUNT(*) 
+		FROM REPORTS
+	</select>
+	
+	<!-- 검색된 신고글 개수 -->
+	<select id="searchReportsCount" parameterType="hashmap" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORTS R
+		JOIN MEMBER M1 ON R.MEMBER_ID = M1.MEMBER_ID
+    	JOIN MEMBER M2 ON R.TARGET_MEMBER_ID = M2.MEMBER_ID
+		<choose>
+			<when test="condition == 'memberId'">
+				WHERE UPPER(M1.NAME) = UPPER(#{keyword})
+			</when>
+			<when test="condition == 'targetMemberId'">
+				WHERE UPPER(M2.NAME) = UPPER(#{keyword})
+			</when>
+			<otherwise>
+				WHERE UPPER(R.DETAIL) LIKE '%' || UPPER(#{keyword}) || '%'
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 필터링된 신고글 개수 -->
+	<select id="filterReportsCount" parameterType="hashmap" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORTS
+		<where>
+	        <if test="type">
+	            AND TYPE = #{type}
+	        </if>
+	        <if test="reason">
+	            AND REASON = #{reason}
+	        </if>
+	        <if test="status">
+	            AND STATUS = #{status}
+	        </if>
+    	</where>
+	</select>
+	
+	<!-- 신고글 목록 조회 -->
+	<select id="reportsList" resultType="ReportsVO">
+		SELECT R.REPORTS_ID
+			  ,R.POST_ID
+			  ,R.REPLY_ID
+			  ,R.REVIEW_ID
+			  ,R.TYPE
+			  ,R.REASON
+			  ,R.DETAIL
+			  ,R.STATUS
+			  ,R.CREATED_AT
+			  ,R.RESOLVED_AT
+  			  ,M1.NAME AS MEMBER_NAME
+			  ,M2.NAME AS TARGET_MEMBER_NAME
+		FROM REPORTS R
+		JOIN MEMBER M1 ON R.MEMBER_ID = M1.MEMBER_ID
+    	JOIN MEMBER M2 ON R.TARGET_MEMBER_ID = M2.MEMBER_ID
+		ORDER BY R.CREATED_AT DESC
+	</select>
+	
+	<!-- 신고글 검색 조회 -->
+	<select id="searchReportsList" parameterType="hashmap" resultType="ReportsVO">
+		SELECT R.REPORTS_ID
+			  ,R.POST_ID
+			  ,R.REPLY_ID
+			  ,R.REVIEW_ID
+			  ,R.TYPE
+			  ,R.REASON
+			  ,R.DETAIL
+			  ,R.STATUS
+			  ,R.CREATED_AT
+			  ,R.RESOLVED_AT
+  			  ,M1.NAME AS MEMBER_NAME
+			  ,M2.NAME AS TARGET_MEMBER_NAME
+		FROM REPORTS R
+		JOIN MEMBER M1 ON R.MEMBER_ID = M1.MEMBER_ID
+    	JOIN MEMBER M2 ON R.TARGET_MEMBER_ID = M2.MEMBER_ID
+		<choose>
+			<when test="condition == 'memberId'">
+				WHERE UPPER(M1.NAME) = UPPER(#{keyword})
+			</when>
+			<when test="condition == 'targetMemberId'">
+				WHERE UPPER(M2.NAME) = UPPER(#{keyword})
+			</when>
+			<otherwise>
+				WHERE UPPER(R.DETAIL) LIKE '%' || UPPER(#{keyword}) || '%'
+			</otherwise>
+		</choose>
+		ORDER BY R.CREATED_AT DESC
+	</select>
+	
+	<!-- 신고글 필터링 조회 -->
+	<select id="filterReportsList" parameterType="hashmap" resultType="ReportsVO">
+		SELECT R.REPORTS_ID
+			  ,R.POST_ID
+			  ,R.REPLY_ID
+			  ,R.REVIEW_ID
+			  ,R.TYPE
+			  ,R.REASON
+			  ,R.DETAIL
+			  ,R.STATUS
+			  ,R.CREATED_AT
+			  ,R.RESOLVED_AT
+  			  ,M1.NAME AS MEMBER_NAME
+			  ,M2.NAME AS TARGET_MEMBER_NAME
+		FROM REPORTS R
+		JOIN MEMBER M1 ON R.MEMBER_ID = M1.MEMBER_ID
+    	JOIN MEMBER M2 ON R.TARGET_MEMBER_ID = M2.MEMBER_ID
+		<where>
+	        <if test="type">
+	            AND R.TYPE = #{type}
+	        </if>
+	        <if test="reason">
+	            AND R.REASON = #{reason}
+	        </if>
+	        <if test="status">
+	            AND R.STATUS = #{status}
+	        </if>
+	    </where>
+    	ORDER BY R.CREATED_AT DESC
+	</select>
+	
+	<!-- 신고글 상세보기 -->
+	<select id="reportsDetail" resultType="ReportsVO">
+	    SELECT R.REPORTS_ID
+	          ,R.MEMBER_ID
+	          ,R.TARGET_MEMBER_ID
+	          ,R.POST_ID
+	          ,R.REPLY_ID
+	          ,R.REVIEW_ID
+	          ,R.TYPE
+	          ,R.REASON
+	          ,R.DETAIL
+	          ,R.STATUS
+	          ,R.CREATED_AT
+	          ,R.RESOLVED_AT
+	          ,M1.NAME AS MEMBER_NAME
+	          ,M2.NAME AS TARGET_MEMBER_NAME
+			  ,CASE 
+              	WHEN R.TYPE = 'REPLY' THEN (SELECT POST_ID FROM COMMUNITY_REPLY WHERE REPLY_ID = R.REPLY_ID)
+              	ELSE R.POST_ID 
+          	   END AS PARENT_ID
+	    FROM REPORTS R
+	    JOIN MEMBER M1 ON R.MEMBER_ID = M1.MEMBER_ID
+	    JOIN MEMBER M2 ON R.TARGET_MEMBER_ID = M2.MEMBER_ID
+	    WHERE R.REPORTS_ID = #{reportsId}
+	</select>
+		
+	
+	<!-- 신고 등록 -->
+	<insert id="reportsInsert" parameterType="map">
+		INSERT INTO REPORTS (
+		REPORTS_ID, MEMBER_ID, TARGET_MEMBER_ID, TYPE,
+		POST_ID, REPLY_ID, REVIEW_ID, REASON, DETAIL
+		) VALUES (
+		REPORTS_ID_SEQ.NEXTVAL, #{memberId}, #{targetMemberId}, #{type},
+		<choose>
+			<when test="type == 'REPLY'">
+				(SELECT POST_ID FROM COMMUNITY_REPLY WHERE REPLY_ID = #{replyId})
+			</when>
+			<when test="type == 'POST'"> #{postId}
+			</when>
+			<otherwise>NULL</otherwise> </choose>,
+		<choose>
+			<when test="replyId != null and replyId != 0">#{replyId}</when>
+			<otherwise>NULL</otherwise>
+		</choose>,
+		<choose>
+			<when test="reviewId != null and reviewId != 0">#{reviewId}</when>
+			<otherwise>NULL</otherwise>
+		</choose>,
+		#{reason}, #{detail}
+		)
+	</insert>
+ 	
+ 	<!--
+ 	신고 수정
+ 	<update id="reportsUpdate" parameterType="ReportsVO">
+ 		UPDATE REPORTS
+ 		SET REASON = #{reason}
+ 			,DETAIL = #{detail}
+ 		WHERE REPORTS_ID = #{reportsId}
+ 		AND MEMBER_ID = #{memberId}
+ 		AND STATUS IS NULL
+ 	</update>
+ 	
+ 	신고 삭제
+ 	<delete id="reportsDelete" parameterType="_int">
+ 		DELETE FROM REPORTS
+ 		WHERE REPORTS_ID = #{reportsId}
+ 		AND MEMBER_ID = #{memberId}
+ 		AND STATUS IS NULL
+ 	</delete>
+ 	-->
+ 	
+ 	<!-- 신고글 상태 처리 - 관리자 권한 -->
+ 	<update id="reportsStatus">
+ 		UPDATE REPORTS 
+	    SET STATUS = #{status}, 
+	    <choose>
+            <when test="status == 'RECEIVED'">
+                RESOLVED_AT = NULL
+            </when>
+            <otherwise>
+                RESOLVED_AT = SYSDATE
+            </otherwise>
+        </choose>
+	    WHERE REPORTS_ID = #{reportsId}
+ 	</update>
+
+	<!-- 누적 신고 수 -->
+	<select id="selectResolvedCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORTS
+	    WHERE STATUS = 'RESOLVED'
+        AND TYPE = #{type}
+	    <choose>
+	        <when test='type == "POST"'>
+	            AND POST_ID = #{postId}
+	        </when>
+	        <when test='type == "REPLY"'>
+	            AND REPLY_ID = #{replyId}
+	        </when>
+	        <when test='type == "REVIEW"'>
+	            AND REVIEW_ID = #{reviewId}
+	        </when>
+    	</choose>
+	</select>
+
+	<!-- 10회 이상 신고 - status : B 처리  -->
+	<update id="reportsBlind">
+		<choose>
+	        <when test='type == "POST"'>
+	            UPDATE COMMUNITY_POST SET STATUS = 'B' WHERE POST_ID = #{postId}
+	        </when>
+	        <when test='type == "REPLY"'>
+	            UPDATE COMMUNITY_REPLY SET STATUS = 'B' WHERE REPLY_ID = #{replyId}
+	        </when>
+	        <when test='type == "REVIEW"'>
+	            UPDATE ECO_SHOP_REVIEW SET STATUS = 'B' WHERE ESR_ID = #{reviewId}
+	        </when> 
+	    </choose>
+	</update>
+
+	<select id="reportsCheck" parameterType="hashmap" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORTS
+		WHERE MEMBER_ID = #{memberId}
+		AND TARGET_MEMBER_ID = #{targetMemberId}
+		<choose>
+			<when test="postId != 0">
+				AND POST_ID = #{postId}
+			</when>
+			<when test="replyId != 0">
+				AND REPLY_ID = #{replyId}
+			</when>
+			<when test="reviewId != 0">
+				AND REVIEW_ID = #{reviewId}
+			</when>
+			<otherwise>
+				AND 1=0
+			</otherwise>
+		</choose>
+	</select>
+</mapper>
