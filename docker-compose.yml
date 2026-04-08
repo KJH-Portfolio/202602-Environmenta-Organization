@@ -1,0 +1,62 @@
+services:
+  # 1. 데이터베이스 (Oracle XE 21c)
+  db:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: easyearth_db
+    environment:
+      - ORACLE_PASSWORD=EASYEARTH
+      - APP_USER=EASYEARTH
+      - APP_USER_PASSWORD=EASYEARTH
+    ports:
+      - "1523:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./FinalProject/sql 구문:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 20s
+      retries: 10
+    networks:
+      - easyearth_net
+
+  # 2. 백엔드 (Spring Boot)
+  backend:
+    build:
+      context: ./FinalProject/easyearth-backend/restfulProject
+      dockerfile: Dockerfile
+    container_name: easyearth_backend
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@db:1521:xe
+      - SPRING_DATASOURCE_USERNAME=EASYEARTH
+      - SPRING_DATASOURCE_PASSWORD=EASYEARTH
+    volumes:
+      - upload_files:/root/uploadFiles
+    networks:
+      - easyearth_net
+
+  # 3. 프론트엔드 (React + Nginx)
+  frontend:
+    build:
+      context: ./FinalProject/easyearth-frontend/my-react-app
+      dockerfile: Dockerfile
+    container_name: easyearth_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - easyearth_net
+
+volumes:
+  oracle_data:
+  upload_files:
+
+networks:
+  easyearth_net:
+    driver: bridge
