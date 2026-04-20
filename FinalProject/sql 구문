@@ -1,3 +1,7 @@
+SET SQLBLANKLINES ON;
+SET DEFINE OFF;
+ALTER SESSION SET CONTAINER = XEPDB1;
+ALTER SESSION SET CURRENT_SCHEMA = EASYEARTH;
 
 /* ===============================================================
    Project: Final Project Database Schema (Consolidated)
@@ -5,39 +9,7 @@
    Description: 초기화 + 모든 채팅 로그 반영 완료
    =============================================================== */
 
--- [1] 초기화: 기존 객체 삭제 (오류 방지용 PL/SQL)
-BEGIN
-    FOR t IN (SELECT table_name FROM user_tables) LOOP
-        EXECUTE IMMEDIATE 'DROP TABLE "' || t.table_name || '" CASCADE CONSTRAINTS';
-    END LOOP;
-    FOR s IN (SELECT sequence_name FROM user_sequences) LOOP
-        EXECUTE IMMEDIATE 'DROP SEQUENCE "' || s.sequence_name || '"';
-    END LOOP;
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
 
-BEGIN
-    FOR seq IN (SELECT sequence_name FROM user_sequences) LOOP
-        EXECUTE IMMEDIATE 'DROP SEQUENCE ' || seq.sequence_name;
-    END LOOP;
-END;
-/
-
-DROP SEQUENCE MEMBER_SEQ;
-DROP SEQUENCE SEQ_WALLET_ID;
-DROP SEQUENCE SEQ_ITEM_ID;
-DROP SEQUENCE SEQ_UI_ID;
-DROP SEQUENCE SEQ_SHOP_ID;
-DROP SEQUENCE POST_ID_SEQ;
-DROP SEQUENCE FILES_ID_SEQ;
-DROP SEQUENCE REPLY_ID_SEQ;
-DROP SEQUENCE REPORTS_ID_SEQ;
-DROP SEQUENCE PL_ID_SEQ;
-DROP SEQUENCE RL_ID_SEQ;
-DROP SEQUENCE INQUIRIES_ID_SEQ;
-DROP SEQUENCE SEQ_ATTENDANCE_ID;
 
 -- [2] 시퀀스 생성 (모든 시퀀스 통합)
 CREATE SEQUENCE MEMBER_SEQ START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
