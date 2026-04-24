@@ -14,7 +14,6 @@
 </p>
 
 <div align="center">
-  <!-- 프로젝트 메인 이미지 또는 시연 GIF 배치 권장 -->
   <img src="https://via.placeholder.com/800x450.png?text=EasyEarth+Main+Dashboard" width="90%" alt="메인 화면 미리보기">
 </div>
 
@@ -30,11 +29,14 @@
 
 ---
 
-## 📅 1. 기본 정보 (Info)
-- **개발 기간:** 2026.03 ~ 2026.04 (약 2개월)
-- **플랫폼:** Web (Responsive)
-- **인원 구성:** 개인 프로젝트 (또는 팀 구성 명시)
-- **Tech Stack:**
+<details>
+<summary><b>1. 기본 정보 (Info) 📅</b></summary>
+<br>
+
+- **📅 개발 기간:** 2026.03 ~ 2026.04 (약 2개월)
+- **🖥️ 플랫폼:** Web (Responsive Support)
+- **👥 인원 구성:** 개인 프로젝트
+- **🛠️ Tech Stack:**
   - **Backend:** `Spring Boot 3.2`, `Java 17`, `MyBatis`, `Spring Security 6`
   - **Frontend:** `React 18`, `Context API`, `Axios Interceptor`
   - **Database:** `Oracle 19c`, `Caffeine Cache`
@@ -42,26 +44,35 @@
   - **AI & Cloud:** `Google Gemini AI (Gemma-3)`, `WebClient (Reactive)`
   - **DevOps:** `Docker`, `Docker Compose`, `Swagger (OpenAPI 3.0)`
 
+</details>
+
 ---
 
-## 📊 2. 프로젝트 전체 설계 (Architecture)
-> 프로젝트의 논리적 구조와 데이터 흐름을 시각화한 상세 문서들입니다.
+<details>
+<summary><b>2. 프로젝트 전체 설계 (Architecture) 📊</b></summary>
+<br>
 
-- **📊 ERD (Entity Relationship Diagram & Data Dictionary)**
-  - 도메인 간 관계 설계 및 컬럼별 상세 제약조건, 시퀀스, 인덱스 전략을 통합한 데이터 설계 청사진
-  - 👉 **[전체 데이터 설계도 (erd.md) 보러가기](./erd.md)**
+**🎯 1. 프로젝트 목표**
+> 탄소 발자국 추적과 AI 비서 기능을 결합하여, 사용자가 일상에서 환경 보호 활동을 즐겁게 실천하고 가시적인 리워드를 얻을 수 있는 선순환 환경 생태계를 구축합니다.
 
-- **🗺️ IA (Information Architecture)**
-  - GNB 중심의 서비스 계층 및 페이지별 접근 권한(Role) 정의
-  - 👉 **[사이트 구조도 (ia.md) 보러가기](./ia.md)**
+**📊 2. ERD (Entity Relationship Diagram & Data Dictionary)**
+- 실시간 채팅 세션, 탄소 정밀 수치 기록, 신고 기반 자정 시스템을 통합 설계한 DB 청사진
+- 👉 **[전체 데이터 설계도 (erd.md) 보러가기](./erd.md)**
 
-- **🌊 User Flow**
-  - 핵심 비즈니스 로직(경로 계산 ➡️ 탄소 산출 ➡️ 리워드)의 흐름 및 예외 처리
-  - 👉 **[유저 행동 흐름 (userflow.md) 보러가기](./userflow.md)**
+**🗺️ 3. IA (Information Architecture) 및 기술 아키텍처**
+- 서비스 계층 구조, React 컴포넌트 설계, 그리고 실시간/AI 인프라를 정의한 기술 설계도
+- 👉 **[사이트 구조도 (ia.md)](./ia.md)** | **[리액트 구조 (react_structure.md)](./react_structure.md)** | **[인프라 설계 (infrastructure_architecture.md)](./infrastructure_architecture.md)**
+- 👉 **[핵심 API 명세서 (api_specification.md) 보러가기](./api_specification.md)**
 
-- **🔑 Environment Setup**
-  - 초기 데이터 현황 및 테스트 계정 정보 명세
-  - 👉 **[초기 데이터 및 테스트 계정 (init_data.md) 보러가기](./init_data.md)**
+**🌊 4. User Flow**
+- JWT 보안 필터링, ORS 기반 경로 계산, 실시간 소켓 핸드쉐이킹 등 핵심 로직의 흐름도
+- 👉 **[유저 행동 흐름 (userflow.md) 보러가기](./userflow.md)**
+
+**🔑 5. Environment Setup**
+- 초기 데이터 현황 및 시연용 테스트 계정 정보 명세
+- 👉 **[초기 데이터 및 테스트 계정 (init_data.md) 보러가기](./init_data.md)**
+
+</details>
 
 ---
 
@@ -69,17 +80,20 @@
 <summary><b>3. 프로젝트 개인 구현 - 백엔드 설계 및 비즈니스 정합성 [CORE] 💎</b></summary>
 <br>
 
+> [!TIP]  
+> **[백엔드 엔지니어링 문제 해결 보고서 (troubleshooting_deep_dive.md) 보러가기](./troubleshooting_deep_dive.md)**
+
 ### 🛡️ 1) JWT 기반 Stateless 인증 시스템 (Security)
-- **Bearer 토큰 인증 (`JwtFilter`)**: `OncePerRequestFilter`를 통한 모든 HTTP 요청 가로채기 및 유효성 검증.
-- **보안 무결성**: `SecurityContextHolder` 연동을 통해 세션 없이도 안정적인 유저 컨텍스트 유지 및 `BCrypt` 단방향 해시 암호화 적용.
+- **Bearer 토큰 인증 (`JwtFilter`)**: `OncePerRequestFilter`를 상속받아 HTTP 요청의 `Authorization` 헤더에서 Bearer 토큰을 추출하고 유효성을 검증하는 전처리 필터 구현.
+- **보안 무결성**: 성공 시 `UsernamePasswordAuthenticationToken`을 생성하여 `SecurityContextHolder`에 저장함으로써 세션 없이도 안정적인 사용자 인증 상태 유지.
 
 ### 🌏 2) 정밀 탄소 알고리즘 및 위치 기반 서비스 (Map & Algo)
-- **Eco-Route 알고리즘**: `OpenRouteService(ORS)`와 `ODsay` 데이터를 융합하여 도보/자전거/대중교통 경로 시각화.
-- **환경 수치 산출**: `거리 * 0.21(탄소 계수)` 및 `절감량 / 6.6(소나무 흡수량)` 공식을 적용한 실시간 환경 기여도 정밀 계산.
+- **Eco-Route 알고리즘**: `OpenRouteService(ORS)` API와 연동하여 실시간 이동 경로를 탐색하고 시각화하는 지리 정보 시스템 구축.
+- **환경 수치 정밀화**: `거리 * 0.21(탄소 계수)` 공식을 적용하여 Oracle `NUMBER(10,3)` 타입으로 소수점 셋째 자리까지 오차 없는 탄소 절감량 계산 및 기록.
 
 ### 💰 3) Eco-Wallet 및 리워드 생태계 (Economy)
-- **트랜잭션 기반 보상**: 퀴즈, 퀘스트, 출석 등 활동 발생 시 포인트 가감 및 이력 기록의 원자적 처리 보장.
-- **EcoTree 성장 모델**: 누적 XP에 따른 레벨업 및 단계별 나무 이미지 동적 렌더링 로직 구현.
+- **원자적 보상 처리**: 퀴즈, 출석 등 활동 보상 시 포인트 증감과 이력 기록을 `@Transactional`로 묶어 데이터 불일치 가능성을 원천 차단.
+- **EcoTree 성장 모델**: 누적 경험치(XP)에 따른 실시간 레벨업 로직과 단계별 나무 성장 이미지를 동적으로 제공하는 게이미피케이션 요소 구현.
 
 </details>
 
@@ -90,17 +104,17 @@
 <br>
 
 ### 🤖 1) Gemini AI 연동 및 비동기 데이터 파이프라인
-- **AI 비서 멘트 생성**: `WebClient`를 활용한 Non-blocking 통신으로 Gemini AI 호출. 날씨/환경 데이터를 기반으로 한 프롬프트 엔지니어링 수행.
-- **성능 최적화 (File Cache)**: 빈번한 AI 호출을 줄이기 위해 생성된 멘트를 로컬 파일 시스템에 JSON으로 직렬화하여 저장하는 커스텀 `FileCacheService` 구축.
+- **비차단형 AI 통신**: `WebClient`를 활용한 Non-blocking 방식으로 Google Gemini AI와 통신하여 실시간 환경 가이드 멘트 생성.
+- **커스텀 파일 캐시**: 빈번한 API 호출로 인한 오버헤드를 방지하기 위해 생성된 AI 응답을 로컬 JSON 파일로 캐싱하는 `FileCacheService`를 구축하여 응답 속도 및 비용 최적화.
 
 ### 💬 2) 고성능 실시간 메시징 엔진 (WebSocket)
-- **STOMP 브로드캐스팅**: `/topic` 및 `/queue` 경로 설정을 통한 효율적인 메시지 라우팅 및 세션 관리 최적화.
-- **Unread Count 알고리즘**: 참여자별 마지막 읽은 메시지 ID를 추적하여 실시간 안 읽은 메시지 개수를 계산하는 고속 쿼리 설계.
-- **커서 기반 페이징 (Cursor-based)**: 대용량 대화 내역 조회 시 성능 저하 방지를 위해 커서 ID를 활용한 무한 스크롤 구현.
+- **STOMP 브로드캐스팅**: WebSocket 상위의 STOMP 프로토콜을 도입하여 방 단위의 구독(Subscription) 시스템 구축 및 메시지 라우팅 최적화.
+- **실시간 상호작용**: 읽음 상태 추적 알고리즘을 통해 참여자별 안 읽은 메시지(Unread Count)를 실시간 산출하는 고속 쿼리 설계.
+- **커서 기반 페이징**: 대용량 대화 내역 조회 시 성능 저하를 방지하기 위해 `MSG_ID` 기반의 Cursor-based Paging을 적용하여 무한 스크롤 구현.
 
-### 🔌 3) 프론트엔드 상태 동기화 및 에러 핸들링
-- **Multi-layer Sync**: `Storage Event`와 `Interval Tracker`를 결합하여 다중 브라우저 탭 간 로그인 상태 완벽 동기화.
-- **Axios Interceptor**: 401/403 에러 발생 시 중앙 집중형 토큰 정리 및 자동 로그인 유도 로직 구축.
+### 🔌 3) 프론트엔드 상태 동기화 및 방어적 아키텍처
+- **Cross-tab Sync**: 브라우저의 `Storage Event`를 감시하여 여러 탭 간 로그인/로그아웃 상태를 0.5초 이내에 완벽 동기화.
+- **Axios Interceptor**: 401/403 에러 발생 시 중앙 집중형 토큰 정리 및 로그인 페이지 리다이렉션 로직을 구축하여 클라이언트 보안 강화.
 
 </details>
 
@@ -110,20 +124,24 @@
 <summary><b>5. 회고 - 프로젝트 성찰 및 향후 지향점 [GROWTH] 🌟</b></summary>
 <br>
 
-- **🟢 Keep**: 백엔드의 표준 MVC 패턴 준수 및 `@Transactional`을 통한 데이터 무결성 확보 습관.
-- **🔴 Problem**: 실시간 알림 기능이 많아지면서 발생하는 웹소켓 세션 관리의 복잡도 증가.
-- **🔵 Try**: 차기 아키텍처에서는 **Redis Pub/Sub**을 도입하여 웹소켓 서버의 수평 확장을 고려한 메시지 브로커 구조로 고도화할 계획.
+- **🟢 Keep**: 백엔드 표준 MVC 레이어 분리 및 `@Transactional`을 통한 데이터 무결성 확보 습관.
+- **🔴 Problem**: 실시간 채팅량이 증가할 때 단일 서버 웹소켓 세션 관리의 한계와 메모리 부하 가능성 식별.
+- **🔵 Try**: 차기 프로젝트에서는 **Redis Pub/Sub**과 메시지 큐를 도입하여 웹소켓 서버의 수평 확장이 가능한 MSA 지향적 아키텍처로 고도화할 계획.
 
 </details>
 
 ---
 
-## 📦 6. 실행 방법 (How to Run)
-1. **Prerequisites**: Docker Desktop, Java 17
-2. **Setup**:
+<details>
+<summary>부록: 프로젝트 실행 방법 (Docker)</summary>
+
+1. **사전 준비**: Docker Desktop 설치 및 실행
+2. **빌드 및 실행**
    ```bash
-   git clone [레포지토리 주소]
-   cd EasyEarth
    docker-compose up -d --build
    ```
-3. **Access**: `http://localhost:3000` (React) / `http://localhost:8080/swagger-ui/index.html` (API Docs)
+3. **접속 주소**
+   - Frontend: `http://localhost:3000`
+   - Backend API (Swagger): `http://localhost:8080/swagger-ui/index.html`
+
+</details>

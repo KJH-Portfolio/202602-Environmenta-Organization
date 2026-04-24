@@ -1,33 +1,37 @@
-# EasyEarth 프로젝트 IA (Information Architecture)
+# EasyEarth 파이널 프로젝트 IA (Information Architecture)
 
-> **사이트 전체 페이지 계층 구조 및 기능 정의**  
-> Mermaid `graph TD` 문법을 활용하여 서비스의 전체 흐름과 접근 권한을 정의합니다.
+> **서비스 전체 계층 구조 및 권한 기반 기능 명세**  
+> 이 문서는 파이널 프로젝트의 핵심 도메인별 페이지 접근 권한(Role)과 통신 방식(HTTP/WebSocket)을 정의합니다.  
+> 👉 **[상세 리액트 컴포넌트 아키텍처 (react_structure.md) 보러가기](./react_structure.md)**
 
 ---
 
 ## 📑 목차
-1. [전체 사이트 구조 (Overview)](#1-전체-사이트-구조-overview)
-2. [도메인별 상세 구조](#2-도메인별-상세-구조)
-   - [🌏 에코 맵 (Map & Route)](#-에코-맵-map--route)
-   - [💬 실시간 채팅 (Messaging)](#-실시간-채팅-messaging)
-   - [📝 커뮤니티 (Community)](#-커뮤니티-community)
-   - [🌱 마이페이지 (My & Growth)](#-마이페이지-my--growth)
+1. [사이트 구조 설계 전략 (Technical Note)](#-사이트-구조-설계-전략-technical-note)
+2. [전체 사이트 계층 구조 (Overview)](#1-전체-사이트-계층-구조-overview)
+3. [도메인별 상세 기능 구조](#2-도메인별-상세-기능-구조)
+4. [페이지 목록 및 기술 매핑 명세](#3-페이지-목록-및-기술-매핑-명세)
 
 ---
 
-## 1. 전체 사이트 구조 (Overview)
+## 💡 사이트 구조 설계 전략 (Technical Note)
+- **권한 기반 라우팅**: 모든 페이지 접근은 **JWT(Stateless)** 토큰의 클레임 정보를 기반으로 하며, 관리자(`ADMIN`)와 일반유저(`MEMBER`)의 접근 권한을 물리적/논리적으로 엄격히 격리했습니다.
+- **통신 이원화**: 일반적인 데이터 조회/명령은 **REST API(HTTP)**를, 실시간성이 중요한 채팅 기능은 **WebSocket(STOMP)** 프로토콜을 사용하는 이원화된 통신 아키텍처를 채택했습니다.
+- **방어적 프론트엔드**: 서버 사이드 인가와 별도로, 클라이언트 단에서도 `Private Route`를 구축하여 권한이 없는 사용자의 접근 시도를 선제적으로 차단했습니다.
 
-상단 내비게이션 바(GNB)를 중심으로 한 메인 계층 구조입니다.
+## 📊 1. 전체 사이트 계층 구조 (Overview)
 
 ```mermaid
 graph TD
-    ROOT["🏠 EasyEarth 메인"]
-    ROOT --> NAV_MAP["🌏 에코 맵"]
-    ROOT --> NAV_CHAT["💬 실시간 채팅"]
-    ROOT --> NAV_COMM["📝 커뮤니티"]
-    ROOT --> NAV_MY["🌱 마이페이지 / 에코트리"]
-    ROOT --> NAV_AUTH["👤 로그인 / 회원가입"]
+    ROOT["🏠 EasyEarth 메인 (Dashboard)"]
+    
+    ROOT --> NAV_MAP["🌏 에코 맵 (Map & Route)"]
+    ROOT --> NAV_CHAT["💬 실시간 채팅 (Messaging)"]
+    ROOT --> NAV_COMM["📝 커뮤니티 (Governance)"]
+    ROOT --> NAV_MY["🌱 마이페이지 (Gamification)"]
+    ROOT --> NAV_AUTH["👤 인증 시스템 (JWT/Auth)"]
 
+    %% 스타일 정의
     style ROOT fill:#4CAF50,color:#fff,stroke:#388E3C
     style NAV_MAP fill:#2196F3,color:#fff
     style NAV_CHAT fill:#FF9800,color:#fff
@@ -38,67 +42,61 @@ graph TD
 
 ---
 
-## 2. 도메인별 상세 구조
+## 🛠️ 2. 도메인별 상세 기능 구조
 
-### 🌏 에코 맵 (Map & Route)
-위치 기반 상점 조회 및 탄소 절감 경로 계산을 담당합니다.
+### 🌏 에코 맵 (Green Map & Carbon Algo)
+> 위치 기반 상점 정보 제공 및 실시간 탄소 절감 경로 산출 기능을 담당합니다.
 
 ```mermaid
 graph LR
-    SUB_M["🌏 에코 맵 메인"] --> M1["상점 목록 / 검색"]
-    M1 --> M2["상점 상세 보기"]
-    M2 --> M3["리뷰 조회 / 작성"]
+    SUB_M["🌏 에코 맵"] --> M1["에코 상점 검색/목록"]
+    M1 --> M2["상점 상세 및 리뷰 (Review Sync)"]
     
-    SUB_M --> M4["경로 탐색 (ORS)"]
-    M4 --> M5["이동수단별 탄소 수치 계산"]
-    M5 --> M6["에코 경로 결과 시각화"]
+    SUB_M --> M3["탄소 절감 경로 탐색 (ORS API)"]
+    M3 --> M4["이동 수단별 탄소 수치 계산"]
+    M4 --> M5["경로 기록 및 포인트 정산 (Atomic)"]
 
     style SUB_M fill:#2196F3,color:#fff
 ```
 
-### 💬 실시간 채팅 (Messaging)
-유저 간 실시간 소통 및 커뮤니케이션을 담당합니다.
+### 💬 실시간 채팅 (Messaging & Socket)
+> WebSocket(STOMP)을 활용한 실시간 통신 및 세션 기반 참여 관리를 담당합니다.
 
 ```mermaid
 graph LR
-    SUB_C["💬 채팅 메인"] --> C1["참여 중인 채팅방 목록"]
-    C1 --> C2{방 입장}
-    C2 -->|"🔒 로그인"| C3["실시간 메시징 (WebSocket)"]
-    C3 --> C4["메시지 검색 / 상단 공지"]
-    C3 --> C5["멤버 관리 / 초대 / 강퇴"]
+    SUB_C["💬 실시간 채팅"] --> C1["채팅방 목록 (Active Sessions)"]
+    C1 --> C2["실시간 메시징 (WebSocket/STOMP)"]
+    C2 --> C3["메시지 이력 조회 (Cursor Paging)"]
+    C2 --> C4["읽음 상태 및 참여자 트래킹"]
     
-    C1 --> C6{방 개설}
-    C6 -->|"🔒 로그인"| C7["채팅방 설정 (이미지/제목)"]
+    SUB_C --> C5["채팅방 생성 및 초대 거버넌스"]
 
     style SUB_C fill:#FF9800,color:#fff
 ```
 
-### 📝 커뮤니티 (Community)
-환경 보호 활동 공유 및 자유로운 정보 교환을 담당합니다.
+### 📝 커뮤니티 및 보안 (Governance & Community)
+> 정보 공유 및 신고 시스템을 통한 자율적 커뮤니티 정화를 담당합니다.
 
 ```mermaid
 graph LR
-    SUB_B["📝 커뮤니티 메인"] --> B1["게시판 목록\n(공지/자유/정보/신고)"]
-    B1 --> B2["게시글 상세 조회"]
-    B2 --> B3["댓글 / 대댓글 작성"]
-    B2 --> B4["좋아요 / 신고하기"]
+    SUB_B["📝 커뮤니티"] --> B1["통합 게시판 (Notice/Free)"]
+    B1 --> B2["게시글 상세 및 계층형 댓글"]
+    B2 --> B3["신고 접수 (Blind System 연동)"]
     
-    B1 --> B5{글쓰기}
-    B5 -->|"🔒 로그인"| B6["에디터 (파일 첨부)"]
+    SUB_B --> B4["에디터 (이미지 파일 업로드)"]
 
     style SUB_B fill:#9C27B0,color:#fff
 ```
 
-### 🌱 마이페이지 (My & Growth)
-개인 활동 이력 관리 및 에코트리 성장을 담당합니다.
+### 🌱 마이페이지 (Eco-Gamification)
+> 사용자의 활동 지표 시각화 및 에코트리 성장을 통한 동기 부여를 담당합니다.
 
 ```mermaid
 graph TD
-    subgraph MY ["🌱 마이페이지 (Private)"]
-        MY1["내 프로필 관리"]
-        MY2["에코트리 대시보드\n(XP/Level 시각화)"]
-        MY3["활동 내역 조회\n(포인트/참여 퀘스트)"]
-        MY4["데일리 체크\n(출석/퀴즈/인증)"]
+    subgraph MY ["🌱 게이미피케이션 (Private Area)"]
+        MY1["에코트리 대시보드 (XP 시각화)"]
+        MY2["포인트 지갑 및 활동 이력"]
+        MY3["데일리 체크 (출석/퀴즈/인증)"]
     end
 
     style MY fill:#F1F8E9,stroke:#8BC34A,color:#333
@@ -106,15 +104,15 @@ graph TD
 
 ---
 
-## 📋 페이지 목록 및 매핑 명세
+## 📋 3. 페이지 목록 및 기술 매핑 명세
 
-| 영역 | 페이지 역할 | Mapping URL | 로그인 | 접근 권한 |
-|---|---|---|---|---|
-| **메인** | 대시보드/AI 가이드 | `/dashboard` | ❌ | 공통 |
-| **에코 맵** | 지도/상점 조회 | `/map`, `/map/detail` | ❌ | 공통 |
-| **에코 맵** | 경로 계산 | `/map/route` | ❌ | 공통 |
-| **채팅** | 룸 목록/메시징 | `/chat`, `/chat/room/:id` | ✅ | 일반회원 |
-| **커뮤니티** | 게시판/상세 | `/community`, `/community/:id` | ❌ | 공통 |
-| **커뮤니티** | 글쓰기 | `/community/write` | ✅ | 일반회원 |
-| **마이페이지** | 에코트리/프로필 | `/mypage`, `/profile` | ✅ | 일반회원 |
-| **마이페이지** | 퀴즈/퀘스트 | `/activity/quiz`, `/activity/quest` | ✅ | 일반회원 |
+| 도메인 | 기능명 | URL | 통신 방식 | 권한(Role) |
+|---|---|---|:---:|:---:|
+| **메인** | 대시보드 (AI 조언) | `/` | HTTP (WebClient) | 공통 |
+| **지도** | 경로 탐색 및 탄소 계산 | `/map/route` | HTTP (ORS API) | 공통 |
+| **채팅** | 실시간 메시징 | `/chat/:id` | **WebSocket** | 일반회원 |
+| **커뮤니티** | 게시글 작성 | `/post/write` | HTTP (Multipart) | 일반회원 |
+| **커뮤니티** | 유해물 신고 | `/post/report` | HTTP | 일반회원 |
+| **마이페이지** | 에코트리 관리 | `/mypage` | HTTP | 일반회원 |
+| **인증** | 로그인 / 회원가입 | `/auth` | HTTP (JWT) | 공통 |
+| **관리자** | 신고 게시물 블라인드 처리 | `/admin/report` | HTTP | **ADMIN** |
