@@ -5,6 +5,13 @@
 
 ---
 
+## 💡 데이터 설계 및 정합성 유지 원칙 (Technical Note)
+- **수치 정밀도 (Precision)**: 탄소 절감량(`distance * 0.21`)과 같은 환경 수치는 데이터 손실 방지를 위해 Oracle `NUMBER(10, 3)` 타입을 적용하여 소수점 셋째 자리까지 관리합니다.
+- **보안 기반 설계**: 비밀번호는 `BCrypt` 10 rounds 암호화를 필수로 하며, `Stateless` 인증을 지원하기 위한 사용자 식별 구조를 갖춥니다.
+- **이력 보존 전략**: 포인트 지급 및 게시글 상태 변경 시 정합성을 위해 별도의 히스토리 테이블 또는 `STATUS` 컬럼을 활용한 논리적 관리를 수행합니다.
+
+---
+
 ## 📊 1. 전체 도메인 관계도 (Overview)
 
 ```mermaid
@@ -170,9 +177,7 @@ erDiagram
 
 ---
 
-## 🔄 도메인 계층 구조 (Hierarchy View)
-
-> `MEMBERS` 테이블을 중심으로 한 서비스별 데이터 종속성 구조입니다.
+## 🔄 2. 도메인 계층 구조 (Hierarchy View)
 
 ```text
 MEMBERS (USER_ID)
@@ -191,21 +196,32 @@ MEMBERS (USER_ID)
 
 ---
 
-## 📋 테이블 그룹 요약
+## 📋 3. 테이블 상세 명세 (Data Dictionary)
 
-| 그룹 | 테이블 | 비고 |
+### 🔑 주요 컬럼 제약사항
+| 테이블 | 컬럼 | 타입 | 제약조건 | 설명 / 비고 |
+|---|---|---|---|---|
+| `MEMBERS` | `USER_PWD` | VARCHAR2(100) | NN | **BCrypt** 단방향 해시 암호화 적용 |
+| `MEMBERS` | `ONLINE_STATUS` | CHAR(1) | DEFAULT 'N' | 'Y'(온라인), 'N'(오프라인) 실시간 동기화 |
+| `ECO_TREES` | `CURRENT_XP` | NUMBER | DEFAULT 0 | 획득 경험치 (레벨업 로직과 연동) |
+| `CHAT_MESSAGES`| `IS_DELETED` | CHAR(1) | DEFAULT 'N' | 'Y'(삭제됨), 'N'(정상) - Soft Delete |
+| `CHAT_PARTICIPANTS`| `STATUS` | VARCHAR2(10) | NN | `PENDING`, `ACCEPTED`, `REJECTED` |
+| `BOARDS` | `STATUS` | VARCHAR2(10) | NN | `NORMAL`, `BLIND` (신고 10회 누적 시) |
+| `POINT_HISTORIES`| `AMOUNT` | NUMBER | NN | 증감 포인트 (+/-) |
+
+### 🏷️ 시퀀스(Sequence) 목록
+| 시퀀스명 | 적용 테이블.컬럼 | 설명 |
 |---|---|---|
-| 👤 **Identity** | `MEMBERS`, `WALLETS` | 보안 및 경제 생태계의 기초 |
-| 💬 **Real-time** | `CHAT_ROOMS`, `CHAT_MESSAGES`, `CHAT_PARTICIPANTS` | WebSocket 기반 실시간 동기화 |
-| 🗺️ **Location** | `ECO_SHOPS`, `SHOP_REVIEWS` | 공공 데이터 싱크 및 유저 피드백 |
-| 📝 **Governance** | `BOARDS`, `COMMENTS`, `BOARD_REPORTS` | 자정 작용(신고) 및 계층형 소통 |
-| 🌱 **Growth** | `ECO_TREES`, `ATTENDANCE` | 사용자 리텐션 및 게이미피케이션 |
+| `SEQ_MEMBER_NO` | `MEMBERS.MEMBER_NO` | 회원 일련번호 |
+| `SEQ_CHAT_ROOM` | `CHAT_ROOMS.ROOM_ID` | 채팅방 ID |
+| `SEQ_CHAT_MSG` | `CHAT_MESSAGES.MSG_ID` | 메시지 ID |
+| `SEQ_BOARD_ID` | `BOARDS.BOARD_ID` | 게시글 ID |
+| `SEQ_POINT_HIS` | `POINT_HISTORIES.HISTORY_ID` | 포인트 이력 ID |
+| `SEQ_SHOP_ID` | `ECO_SHOPS.SHOP_ID` | 에코 상점 ID |
 
 ---
 
-## ⚡ DB 성능 최적화 전략 (Index Strategy)
-
-조회 성능 극대화 및 커서 기반 페이징을 위해 다음과 같은 인덱스를 설계했습니다.
+## ⚡ 4. DB 성능 최적화 전략 (Index Strategy)
 
 | 대상 테이블 | 대상 컬럼 | 인덱스 종류 | 기대 효과 |
 |---|---|---|---|

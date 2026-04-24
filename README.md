@@ -47,9 +47,9 @@
 ## 📊 2. 프로젝트 전체 설계 (Architecture)
 > 프로젝트의 논리적 구조와 데이터 흐름을 시각화한 상세 문서들입니다.
 
-- **📊 ERD (Entity Relationship Diagram)**
-  - 5대 도메인(회원, 채팅, 지도, 커뮤니티, 게임) 간의 정규화된 관계 설계
-  - 👉 **[전체 DB 설계도 (erd.md) 보러가기](./erd.md)**
+- **📊 ERD (Entity Relationship Diagram & Data Dictionary)**
+  - 도메인 간 관계 설계 및 컬럼별 상세 제약조건, 시퀀스, 인덱스 전략을 통합한 데이터 설계 청사진
+  - 👉 **[전체 데이터 설계도 (erd.md) 보러가기](./erd.md)**
 
 - **🗺️ IA (Information Architecture)**
   - GNB 중심의 서비스 계층 및 페이지별 접근 권한(Role) 정의
@@ -59,9 +59,9 @@
   - 핵심 비즈니스 로직(경로 계산 ➡️ 탄소 산출 ➡️ 리워드)의 흐름 및 예외 처리
   - 👉 **[유저 행동 흐름 (userflow.md) 보러가기](./userflow.md)**
 
-- **📒 DB Structure**
-  - 테이블별 제약조건, 데이터 타입 선정 근거 및 인덱스 전략
-  - 👉 **[데이터 명세서 (db_structure.md) 보러가기](./db_structure.md)**
+- **🔑 Environment Setup**
+  - 초기 데이터 현황 및 테스트 계정 정보 명세
+  - 👉 **[초기 데이터 및 테스트 계정 (init_data.md) 보러가기](./init_data.md)**
 
 ---
 
