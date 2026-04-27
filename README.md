@@ -39,7 +39,7 @@
 <summary><b>1. 기본 정보 (개발 기간, 기술 스택, 인원 구성) 📅</b></summary>
 <br>
 
-- 📅 **개발 기간:** 2026.03 ~ 2026.04 (약 1.5개월)
+- 📅 **개발 기간:** 2026.02 ~ 2026.04 (약 2개월)
 
 - 🖥️ **플랫폼:** Web
 
@@ -109,18 +109,19 @@
 <br>
 
 - 🎯 **프로젝트 목표 (Foundation & Integrity):** 
-  - **실시간 비동기 아키텍처 수립:** 기존의 HTTP Request-Response 모델을 넘어, 클라이언트의 명시적 요청 없이도 서버가 먼저 데이터를 푸시(Push)할 수 있는 **양방향 통신 인프라(WebSocket/STOMP)**를 완벽하게 제어하는 것을 목표로 했습니다.
+  - **외부 API 기반 데이터 파이프라인 및 AI 가공:** 기상청 공공데이터와 글로벌 환경 뉴스(NYT RSS) 등 원시(Raw) 데이터를 서버 단에서 직접 수집하고, 이를 Google Gemini AI와 연동하여 사용자 친화적인 정보(번역, 맞춤형 환경 조언)로 실시간 가공 및 캐싱하는 백엔드 아키텍처를 설계하는 것을 목표로 했습니다.
+  - **실시간 비동기 아키텍처 수립:** 클라이언트의 명시적 요청 없이도 서버가 먼저 데이터를 푸시(Push)할 수 있는 **양방향 통신 인프라(WebSocket/STOMP)**를 완벽하게 제어하여 끊김 없는 알림망을 구축했습니다.
   - **확장성 있는 보안 필터 체인 구축:** Session의 한계를 벗어나 **Stateless한 JWT 인증 체계**를 근간으로 삼고, 모든 API와 소켓 핸드쉐이크 단계에서 인증 무결성을 보증하는 방어선을 구축했습니다.
 
 > [!IMPORTANT]
 > **Insight: 왜 이 목표를 선정했는가?**  
-> 모던 웹 서비스에서 '실시간 알림'과 '마이크로서비스 친화적인 보안(JWT)'은 필수불가결한 요소입니다. 외부 데이터(날씨, 뉴스)와 생성형 AI를 결합하는 복잡한 파이프라인 속에서도 사용자 경험이 단절되지 않는 고성능 아키텍처 설계 역량을 증명하고자 했습니다.
+> 수집된 원천 외부 데이터(날씨, 뉴스)를 생성형 AI로 가공하여 새로운 가치를 창출하는 **'데이터 파이프라인 설계 역량'**과, 서비스의 근간이 되는 **'실시간 통신 및 보안 인프라(STOMP, JWT)'** 구축을 동등한 핵심 가치로 설정했습니다. 이 두 가지 복잡한 아키텍처가 유기적으로 결합되어 대량의 데이터 처리 중에도 지연 없는 사용자 경험을 제공하는 고성능 백엔드 시스템을 증명하고자 했습니다.
 
 - 📅 **개인 개발 진행 순서 (Sprint):** 
-  - `1. 보안/공통 인프라 (3월)` : JWT 인증 필터(`JwtAuthenticationFilter`), SecurityConfig, CORS 설정 등 기본 방어벽 구축
-  - `2. 실시간 채팅 파이프라인 (3월~4월)` : WebSocketConfig 세팅, STOMP 기반 Pub/Sub 라우팅 및 채팅 도메인 완성
-  - `3. AI/외부 API 연동 (4월)` : WebClient를 활용한 공공데이터 및 NYT RSS 호출, Gemini AI 서비스 결합
-  - `4. 트러블슈팅 고도화 (4월)` : 전역 STOMP 채널 구독 알고리즘 및 캐시(Cache) 적용, 예외 처리 최적화
+  - `1. 보안/공통 인프라 (2월)` : JWT 인증 필터(`JwtAuthenticationFilter`), SecurityConfig, CORS 설정 등 기본 방어벽 구축
+  - `2. 실시간 채팅 파이프라인 (2월말)` : WebSocketConfig 세팅, STOMP 기반 Pub/Sub 라우팅 및 채팅 도메인 완성
+  - `3. AI/외부 API 연동 (3월)` : WebClient를 활용한 공공데이터 및 NYT RSS 호출, Gemini AI 서비스 결합
+  - `4. 트러블슈팅 고도화 (3월말~4월)` : 전역 STOMP 채널 구독 알고리즘 및 캐시(Cache) 적용, 예외 처리 최적화
 
 - 📊 **개인 구현 ERD (실시간 채팅 코어):**
   > 실시간 소통을 위해 회원과 채팅방 간의 다대다(N:M) 관계를 해소하고, **메시지 이력과 참여 상태를 고속으로 조회할 수 있는 핵심 관계망**을 설계했습니다.
@@ -132,26 +133,26 @@
           varchar USER_ID PK
           char    ONLINE_STATUS "Y/N 실시간 상태"
       }
-      CHAT_ROOMS {
-          number  ROOM_ID PK
-          varchar ROOM_TITLE
-      }
-      CHAT_PARTICIPANTS {
-          number  PARTICIPANT_ID PK
-          number  ROOM_ID FK
-          varchar USER_ID FK
-      }
       CHAT_MESSAGES {
           number  MSG_ID PK
           number  ROOM_ID FK
           varchar SENDER_ID FK
           varchar MESSAGE_CONTENT
       }
+      CHAT_PARTICIPANTS {
+          number  PARTICIPANT_ID PK
+          number  ROOM_ID FK
+          varchar USER_ID FK
+      }
+      CHAT_ROOMS {
+          number  ROOM_ID PK
+          varchar ROOM_TITLE
+      }
 
-      MEMBERS ||--o{ CHAT_PARTICIPANTS : "채팅방 참여"
-      CHAT_ROOMS ||--o{ CHAT_PARTICIPANTS : "참여자 목록"
-      CHAT_ROOMS ||--o{ CHAT_MESSAGES : "메시지 이력"
       MEMBERS ||--o{ CHAT_MESSAGES : "메시지 발신"
+      MEMBERS ||--o{ CHAT_PARTICIPANTS : "채팅방 참여"
+      CHAT_ROOMS ||--o{ CHAT_MESSAGES : "메시지 이력"
+      CHAT_ROOMS ||--o{ CHAT_PARTICIPANTS : "참여자 목록"
   ```
 
 - 💡 **기획 방향성 설계 (Core Strategy):** 
