@@ -1,118 +1,92 @@
-# EasyEarth 파이널 프로젝트 IA (Information Architecture)
+---
+작성일: 2026-04-27T18:40
+수정일: 2026-04-27T18:40
+---
+# 🗺️ EasyEarth 파이널 프로젝트 IA (Information Architecture)
 
-> **서비스 전체 계층 구조 및 권한 기반 기능 명세**  
-> 이 문서는 파이널 프로젝트의 핵심 도메인별 페이지 접근 권한(Role)과 통신 방식(HTTP/WebSocket)을 정의합니다.  
-> 👉 **[상세 리액트 컴포넌트 아키텍처 (react_structure.md) 보러가기](./react_structure.md)**
+> **사용자 경험(UX) 중심의 컴포넌트 계층 구조 및 API 통신 명세**  
+> 이 문서는 React 기반 프론트엔드의 라우팅 구조(`AppRouter.jsx`)와 백엔드 API 엔드포인트를 기반으로 플랫폼의 정보 구조와 데이터 흐름을 정의합니다.
 
 ---
 
 ## 📑 목차
-1. [사이트 구조 설계 전략 (Technical Note)](#-사이트-구조-설계-전략-technical-note)
-2. [전체 사이트 계층 구조 (Overview)](#1-전체-사이트-계층-구조-overview)
-3. [도메인별 상세 기능 구조](#2-도메인별-상세-기능-구조)
-4. [페이지 목록 및 기술 매핑 명세](#3-페이지-목록-및-기술-매핑-명세)
+1. [📊 서비스 레이아웃 (Overview)](#1-서비스-레이아웃-overview)
+2. [🐾 도메인별 상세 아키텍처](#2-도메인별-상세-아키텍처)
+3. [📑 페이지 및 API 상세 명세](#3-페이지-및-api-상세-명세)
 
 ---
 
-## 💡 사이트 구조 설계 전략 (Technical Note)
-- **권한 기반 라우팅**: 모든 페이지 접근은 **JWT(Stateless)** 토큰의 클레임 정보를 기반으로 하며, 관리자(`ADMIN`)와 일반유저(`MEMBER`)의 접근 권한을 물리적/논리적으로 엄격히 격리했습니다.
-- **통신 이원화**: 일반적인 데이터 조회/명령은 **REST API(HTTP)**를, 실시간성이 중요한 채팅 기능은 **WebSocket(STOMP)** 프로토콜을 사용하는 이원화된 통신 아키텍처를 채택했습니다.
-- **방어적 프론트엔드**: 서버 사이드 인가와 별도로, 클라이언트 단에서도 `Private Route`를 구축하여 권한이 없는 사용자의 접근 시도를 선제적으로 차단했습니다.
+## 📊 1. 서비스 레이아웃 (Overview)
 
-## 📊 1. 전체 사이트 계층 구조 (Overview)
+사이트의 핵심 메뉴는 GNB(Global Navigation Bar)를 통해 제어되며, 각 도메인은 React Router의 `PrivateRoute`, `PublicRoute` 등 권한 기반 가드 시스템을 거쳐 렌더링됩니다.
 
 ```mermaid
 graph TD
-    ROOT["🏠 EasyEarth 메인 (Dashboard)"]
-    
-    ROOT --> NAV_MAP["🌏 에코 맵 (Map & Route)"]
-    ROOT --> NAV_CHAT["💬 실시간 채팅 (Messaging)"]
-    ROOT --> NAV_COMM["📝 커뮤니티 (Governance)"]
-    ROOT --> NAV_MY["🌱 마이페이지 (Gamification)"]
-    ROOT --> NAV_AUTH["👤 인증 시스템 (JWT/Auth)"]
+    ROOT["🏠 EasyEarth Main<br/>(Home.jsx)"]
+    ROOT --> NAV_CHAT["💬 실시간 채팅<br/>(/chat)"]
+    ROOT --> NAV_NEWS["📰 환경 뉴스<br/>(GlobalEcoNews.jsx)"]
+    ROOT --> NAV_COMM["📝 에코 커뮤니티<br/>(/community)"]
+    ROOT --> NAV_MY["📋 마이페이지<br/>(/mypage)"]
+    ROOT --> NAV_ADMIN["🔒 관리자 대시보드<br/>(AdminRoute)"]
 
-    %% 스타일 정의
     style ROOT fill:#4CAF50,color:#fff,stroke:#388E3C
-    style NAV_MAP fill:#2196F3,color:#fff
     style NAV_CHAT fill:#FF9800,color:#fff
-    style NAV_COMM fill:#9C27B0,color:#fff
-    style NAV_MY fill:#8BC34A,color:#fff
-    style NAV_AUTH fill:#607D8B,color:#fff
+    style NAV_NEWS fill:#03A9F4,color:#fff
 ```
 
 ---
 
-## 🛠️ 2. 도메인별 상세 기능 구조
+## 2. 도메인별 상세 아키텍처
 
-### 🌏 에코 맵 (Green Map & Carbon Algo)
-> 위치 기반 상점 정보 제공 및 실시간 탄소 절감 경로 산출 기능을 담당합니다.
+> [!NOTE]
+> 실시간 양방향 통신이 발생하는 **채팅 시스템**과 외부 API 및 생성형 AI가 융합된 **환경(날씨/뉴스) 시스템**은 본 플랫폼의 백엔드 핵심 코어 인프라이므로, 하기에 상세 프로세스를 정의합니다.
 
-```mermaid
-graph LR
-    SUB_M["🌏 에코 맵"] --> M1["에코 상점 검색/목록"]
-    M1 --> M2["상점 상세 및 리뷰 (Review Sync)"]
-    
-    SUB_M --> M3["탄소 절감 경로 탐색 (ORS API)"]
-    M3 --> M4["이동 수단별 탄소 수치 계산"]
-    M4 --> M5["경로 기록 및 포인트 정산 (Atomic)"]
-
-    style SUB_M fill:#2196F3,color:#fff
-```
-
-### 💬 실시간 채팅 (Messaging & Socket)
-> WebSocket(STOMP)을 활용한 실시간 통신 및 세션 기반 참여 관리를 담당합니다.
+### 💬 2.1 채팅 도메인 (Chat & Notification)
+전역(Global) 알림을 수신하는 메인 소켓 채널과 각 채팅방 내부의 로컬 통신 채널이 병렬적으로 동작합니다.
 
 ```mermaid
 graph LR
-    SUB_C["💬 실시간 채팅"] --> C1["채팅방 목록 (Active Sessions)"]
-    C1 --> C2["실시간 메시징 (WebSocket/STOMP)"]
-    C2 --> C3["메시지 이력 조회 (Cursor Paging)"]
-    C2 --> C4["읽음 상태 및 참여자 트래킹"]
+    C_LOGIN["🔐 로그인 완료<br/>(전역 STOMP 채널 자동 구독)"] --> C_MAIN["💬 채팅 메인<br/>(ChatRoomList.jsx)"]
+    C_MAIN --> C_DETAIL["상세 보기<br/>(ChatRoomDetail.jsx)"]
+    C_DETAIL --> C_PUB["메시지 발송<br/>(/app/chat/message)"]
+    C_PUB --> C_EVENT["비동기 이벤트<br/>(@TransactionalEventListener)"]
     
-    SUB_C --> C5["채팅방 생성 및 초대 거버넌스"]
-
-    style SUB_C fill:#FF9800,color:#fff
+    style C_LOGIN fill:#FF9800,color:#fff
+    style C_EVENT fill:#F44336,color:#fff
 ```
 
-### 📝 커뮤니티 및 보안 (Governance & Community)
-> 정보 공유 및 신고 시스템을 통한 자율적 커뮤니티 정화를 담당합니다.
+### 🌤️ 2.2 날씨 및 뉴스 도메인 (Weather & AI News)
+외부 자원(공공데이터, RSS 피드)을 서버 로컬 파일 캐시(FileCache)로 적재하고, Gemini AI를 통해 데이터를 가공하여 프론트엔드로 전달합니다.
 
 ```mermaid
 graph LR
-    SUB_B["📝 커뮤니티"] --> B1["통합 게시판 (Notice/Free)"]
-    B1 --> B2["게시글 상세 및 계층형 댓글"]
-    B2 --> B3["신고 접수 (Blind System 연동)"]
-    
-    SUB_B --> B4["에디터 (이미지 파일 업로드)"]
+    W_MAIN["🌤️ 날씨 위젯<br/>(Home.jsx)"] --> W_API["기상청 데이터/캐시<br/>(WeatherService)"]
+    W_API --> W_AI["비서 멘트 생성<br/>(GeminiService)"]
+    N_MAIN["📰 뉴스 섹션<br/>(GlobalEcoNews.jsx)"] --> N_RSS["NYT RSS 수집<br/>(GlobalEcoNewsService)"]
+    N_RSS --> N_TRANS["AI 요약 번역<br/>(GeminiService)"]
 
-    style SUB_B fill:#9C27B0,color:#fff
-```
-
-### 🌱 마이페이지 (Eco-Gamification)
-> 사용자의 활동 지표 시각화 및 에코트리 성장을 통한 동기 부여를 담당합니다.
-
-```mermaid
-graph TD
-    subgraph MY ["🌱 게이미피케이션 (Private Area)"]
-        MY1["에코트리 대시보드 (XP 시각화)"]
-        MY2["포인트 지갑 및 활동 이력"]
-        MY3["데일리 체크 (출석/퀴즈/인증)"]
-    end
-
-    style MY fill:#F1F8E9,stroke:#8BC34A,color:#333
+    style W_API fill:#03A9F4,color:#fff
+    style N_RSS fill:#03A9F4,color:#fff
 ```
 
 ---
 
-## 📋 3. 페이지 목록 및 기술 매핑 명세
+## 📑 3. 페이지 및 API 상세 명세
 
-| 도메인 | 기능명 | URL | 통신 방식 | 권한(Role) |
-|---|---|---|:---:|:---:|
-| **메인** | 대시보드 (AI 조언) | `/` | HTTP (WebClient) | 공통 |
-| **지도** | 경로 탐색 및 탄소 계산 | `/map/route` | HTTP (ORS API) | 공통 |
-| **채팅** | 실시간 메시징 | `/chat/:id` | **WebSocket** | 일반회원 |
-| **커뮤니티** | 게시글 작성 | `/post/write` | HTTP (Multipart) | 일반회원 |
-| **커뮤니티** | 유해물 신고 | `/post/report` | HTTP | 일반회원 |
-| **마이페이지** | 에코트리 관리 | `/mypage` | HTTP | 일반회원 |
-| **인증** | 로그인 / 회원가입 | `/auth` | HTTP (JWT) | 공통 |
-| **관리자** | 신고 게시물 블라인드 처리 | `/admin/report` | HTTP | **ADMIN** |
+| 도메인 | 기능(Feature) | URL 경로 (Endpoint) | 통신 방식 | 권한(Route Guard) |
+|---|---|---|---|---|
+| **채팅** | 채팅방 목록 및 생성 | `/chat` | **REST (JSON)** | PrivateRoute |
+| **채팅** | 실시간 채팅 및 알림 채널 | `ws://domain/ws-stomp` | **STOMP (WebSocket)** | PrivateRoute |
+| **날씨** | 전국 기상청 공공데이터 | `/weather/forecast` | REST (JSON) | PublicRoute |
+| **AI 비서** | AI 기반 실천 조언 | `/gemini/secretary` | REST (JSON) | PublicRoute |
+| **뉴스** | 글로벌 환경 뉴스 연동 | `/global/eco-news` | REST (JSON) | PublicRoute |
+| **인증** | 카카오 소셜 연동 | `/api/auth/kakao` | REST (JSON) | PublicRoute |
+| **보안** | JWT 토큰 갱신 | `/api/auth/refresh` | REST (JSON) | PrivateRoute |
+| **회원** | 프로필 및 지갑 내역 | `/member/profile` | REST (JSON) | PrivateRoute |
+
+---
+
+### 💡 문서 활용 가이드
+- **STOMP (WebSocket)**: 클라이언트의 지속적인 폴링(Polling) 없이 서버가 클라이언트로 데이터를 즉시 푸시(Push)할 수 있는 실시간 양방향 통신 계층입니다.
+- **REST (JSON)**: 프론트엔드의 전역 인터셉터(`apis/axios.jsx`)를 통해 `Authorization: Bearer` 헤더가 자동 첨부되어 통신합니다.
+- **Route Guard**: React Router의 `PrivateRouter` 및 `AuthContext`를 통해 토큰 만료 또는 비인가 사용자의 페이지 접근을 원천 차단합니다.
