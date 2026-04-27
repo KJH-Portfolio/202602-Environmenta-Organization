@@ -90,7 +90,8 @@
 **💡 8. 주요 기능 요약**
 - 👤 **회원 및 관리자 기능 (Member & Admin)**
   - JWT 기반 자체 로그인 및 카카오 소셜 로그인, 마이페이지 활동 내역 관리
-- 🌱 **탄소 발자국 추적 (Carbon Tracking & Reward)**
+- 🌱 **탄소 발자국 추적 및 에코 맵 (Map & Carbon Tracking)**
+  - 제로 웨이스트 상점 등 서울시 환경 테마 요소를 지도로 탐색 및 맞춤형 길찾기 제공
   - 이동 거리 기반 정밀 탄소 절감량 계산 및 에코 지갑 포인트 적립
   - 나무 성장(EcoTree) 시각화를 통한 게이미피케이션
 - 💬 **실시간 커뮤니티 및 채팅 (Community & Chat)**
@@ -107,9 +108,6 @@
 <summary><b>3. 프로젝트 개인 구현 - 백엔드 설계 철학 및 로직 구현 [CORE] 💎</b></summary>
 <br>
 
-> [!TIP]  
-> **[백엔드 엔지니어링 문제 해결 보고서 (troubleshooting_deep_dive.md) 보러가기](troubleshooting_deep_dive.md)**
-
 - 🎯 **프로젝트 목표 (Foundation & Integrity):** 
   - **실시간 비동기 아키텍처 수립:** 기존의 HTTP Request-Response 모델을 넘어, 클라이언트의 명시적 요청 없이도 서버가 먼저 데이터를 푸시(Push)할 수 있는 **양방향 통신 인프라(WebSocket/STOMP)**를 완벽하게 제어하는 것을 목표로 했습니다.
   - **확장성 있는 보안 필터 체인 구축:** Session의 한계를 벗어나 **Stateless한 JWT 인증 체계**를 근간으로 삼고, 모든 API와 소켓 핸드쉐이크 단계에서 인증 무결성을 보증하는 방어선을 구축했습니다.
@@ -123,6 +121,38 @@
   - `2. 실시간 채팅 파이프라인 (3월~4월)` : WebSocketConfig 세팅, STOMP 기반 Pub/Sub 라우팅 및 채팅 도메인 완성
   - `3. AI/외부 API 연동 (4월)` : WebClient를 활용한 공공데이터 및 NYT RSS 호출, Gemini AI 서비스 결합
   - `4. 트러블슈팅 고도화 (4월)` : 전역 STOMP 채널 구독 알고리즘 및 캐시(Cache) 적용, 예외 처리 최적화
+
+- 📊 **개인 구현 ERD (실시간 채팅 코어):**
+  > 실시간 소통을 위해 회원과 채팅방 간의 다대다(N:M) 관계를 해소하고, **메시지 이력과 참여 상태를 고속으로 조회할 수 있는 핵심 관계망**을 설계했습니다.
+  > *(※ 포트폴리오 가독성을 위해 외래키 조인과 핵심 비즈니스 로직에 관여하는 주요 컬럼만 축약하여 명시했습니다.)*
+  > 👉 **[전체 DB 설계도 (erd.md) 보러가기](erd.md)**
+  ```mermaid
+  erDiagram
+      MEMBERS {
+          varchar USER_ID PK
+          char    ONLINE_STATUS "Y/N 실시간 상태"
+      }
+      CHAT_ROOMS {
+          number  ROOM_ID PK
+          varchar ROOM_TITLE
+      }
+      CHAT_PARTICIPANTS {
+          number  PARTICIPANT_ID PK
+          number  ROOM_ID FK
+          varchar USER_ID FK
+      }
+      CHAT_MESSAGES {
+          number  MSG_ID PK
+          number  ROOM_ID FK
+          varchar SENDER_ID FK
+          varchar MESSAGE_CONTENT
+      }
+
+      MEMBERS ||--o{ CHAT_PARTICIPANTS : "채팅방 참여"
+      CHAT_ROOMS ||--o{ CHAT_PARTICIPANTS : "참여자 목록"
+      CHAT_ROOMS ||--o{ CHAT_MESSAGES : "메시지 이력"
+      MEMBERS ||--o{ CHAT_MESSAGES : "메시지 발신"
+  ```
 
 - 💡 **기획 방향성 설계 (Core Strategy):** 
   - **전역 통신망 및 알림 분리 설계:** 특정 화면에 종속되지 않는 **Global Notification 채널**을 기획하여 애플리케이션 접속과 동시에 사용자 맞춤형 알림을 즉각 수신할 수 있도록 했습니다.
