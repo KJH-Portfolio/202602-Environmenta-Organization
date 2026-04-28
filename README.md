@@ -105,13 +105,14 @@
 <br>
 
 - 🎯 **프로젝트 목표 (Foundation & Integrity):** 
+  - **객체 지향적 영속성 관리 및 성능 최적화 (Spring Data JPA):** 단순 SQL 매핑을 넘어 Entity 간 연관 관계 중심의 JPA 아키텍처를 도입하여, 복잡한 실시간 채팅 데이터와 상태 이력을 안전하게 통제하고 `Slice` 페이징 등으로 DB I/O 성능을 최적화했습니다.
   - **외부 API 기반 데이터 파이프라인 및 AI 가공:** 기상청 공공데이터와 글로벌 환경 뉴스(NYT RSS) 등 원시(Raw) 데이터를 서버 단에서 직접 수집하고, 이를 Google Gemini AI와 연동하여 사용자 친화적인 정보(번역, 맞춤형 환경 조언)로 실시간 가공 및 캐싱하는 백엔드 아키텍처를 설계하는 것을 목표로 했습니다.
   - **실시간 비동기 아키텍처 수립:** 클라이언트의 명시적 요청 없이도 서버가 먼저 데이터를 푸시(Push)할 수 있는 **양방향 통신 인프라(WebSocket/STOMP)**를 완벽하게 제어하여 끊김 없는 알림망을 구축했습니다.
   - **확장성 있는 보안 필터 체인 구축:** Session의 한계를 벗어나 **Stateless한 JWT 인증 체계**를 근간으로 삼고, 모든 API와 소켓 핸드쉐이크 단계에서 인증 무결성을 보증하는 방어선을 구축했습니다.
 
 > [!IMPORTANT]
 > **Insight: 왜 이 목표를 선정했는가?**  
-> 수집된 원천 외부 데이터(날씨, 뉴스)를 생성형 AI로 가공하여 새로운 가치를 창출하는 **'데이터 파이프라인 설계 역량'**과, 서비스의 근간이 되는 **'실시간 통신 및 보안 인프라(STOMP, JWT)'** 구축을 핵심 가치로 설정했습니다. 이 두 가지 복잡한 아키텍처가 유기적으로 결합되어 대량의 데이터 처리 중에도 지연 없는 사용자 경험을 제공하는 고성능 백엔드 시스템을 증명하고자 했습니다.
+> 레거시 스택(MyBatis)에서 경험한 단편적 쿼리 매핑의 한계를 극복하고자, 현대적인 **'JPA 기반의 객체 지향적 도메인 설계'**를 시스템의 기초 체력으로 삼았습니다. 이 튼튼한 기반 위에 원천 데이터를 생성형 AI로 가공하는 **'데이터 파이프라인 설계 역량'**과, 서비스의 생동감을 부여하는 **'실시간 통신 및 보안 인프라(STOMP, JWT)'**를 유기적으로 결합했습니다. 즉, 복잡한 기술 스택들이 맞물려 돌아가면서도 데이터 무결성을 유지하고 지연 없는 사용자 경험을 제공하는 고성능 백엔드 시스템을 증명하는 것이 핵심 가치였습니다.
 
 - 📅 **개인 개발 진행 순서 (Sprint):** 
   - `1. 보안/공통 인프라 (2월)` : JWT 인증 필터(`JwtAuthenticationFilter`), SecurityConfig, CORS 설정 등 기본 방어벽 구축
@@ -165,14 +166,22 @@
 
 #### ✨ 주요 기능 하이라이트 (Functional Highlights)
 
-**1) 완벽한 JWT 보안/인증 인프라 통제**
-- 로그인 직후 프론트엔드의 `axios` 인터셉터가 토큰을 자동 관리하고, 백엔드의 `JwtAuthenticationFilter`가 모든 요청을 선제적으로 검증하여 무결점 Stateless 보안 생태계를 유지합니다.
+**1) 전역 알림 기반 실시간 채팅 커뮤니티**
+- 어디서든 수신 가능한 전역 STOMP 채널을 통해 끊김 없는 알림을 제공하며, 사용자 간 실시간 양방향 소통이 가능한 채팅방을 지원합니다.
+<br>
+<img src="./source/채팅_메인.png" width="100%" alt="실시간 채팅 및 전역 알림 화면">
 
-**2) STOMP 기반 고성능 실시간 메시징 엔진**
-- 참여자 단위가 아닌 채팅방 단위의 Pub/Sub을 분리하고, `@TransactionalEventListener`를 통해 채팅 전송과 알림 저장을 원자적으로 처리하여 데이터 불일치를 막았습니다.
 
-**3) Gemini AI 기반 환경 비서 및 글로벌 뉴스 제공**
-- 실시간 날씨 데이터와 NYT 글로벌 기사를 Gemini AI에게 프롬프팅하여, 사용자에게 맥락에 맞는 조언을 제공하고 뉴스를 한글로 요약 번역합니다.
+**2) 맞춤형 날씨 정보 및 AI 환경 비서**
+- 기상청 실시간 데이터와 Google Gemini AI를 연동하여, 현재 날씨와 맥락에 맞는 친환경 실천 멘트를 대시보드에서 즉각 제공합니다.
+<br>
+<img src="./source/날씨_비서.png" width="100%" alt="날씨 정보 및 AI 환경 비서 화면">
+
+
+**3) 글로벌 환경 뉴스 수집 및 AI 요약 번역**
+- NYT 등 해외 유력 언론사의 환경 섹션 기사를 실시간 수집하고, AI를 통해 빠르고 정확하게 한글로 번역 및 요약하여 제공합니다.
+<br>
+<img src="./source/환경_뉴스.png" width="100%" alt="글로벌 환경 뉴스 화면">
 
 </details>
 
@@ -183,76 +192,82 @@
 
 **🔍 핵심 로직 분석 (Core Logic Analysis)**
 
-**1️⃣ [UX / Real-time] 채팅방 밖에서도 알림을 받는 전역 STOMP 채널 구독 (Global Notification)**
-- **문제 인식:** 기존 시스템은 사용자가 '특정 채팅방 페이지'에 입장했을 때만 해당 방의 소켓 채널을 구독(Subscribe)했습니다. 이로 인해 다른 페이지(메인 화면, 날씨, 마이페이지 등)에 머물고 있을 때는 **새로운 채팅이 도착했는지 즉각적으로 인지할 수 없는 UX의 치명적 결함**이 있었습니다.
-- **아키텍처 혁신 (Troubleshooting):**
-  - **로그인 시점 전역 채널 진입:** 사용자가 로그인(또는 토큰 기반 자동 로그인)하는 즉시, 프론트엔드의 최상단 레이어에서 사용자의 고유 ID를 기반으로 하는 **전역(Global) STOMP 채널에 자동 접속 및 구독(Subscribe)**하도록 아키텍처를 전면 수정했습니다.
-  - **백엔드 라우팅 최적화:** 새로운 메시지 발생 시, 기존 채팅방 채널에 브로드캐스트하는 동시에 수신자의 전역 채널로 알림(Notification) 이벤트를 발행하여 **어디서든 즉각적으로 안 읽음 뱃지(Badge) 카운트를 갱신**하도록 설계했습니다. 이를 통해 플랫폼 전체의 실시간 체감 반응성을 획기적으로 끌어올렸습니다.
+**1️⃣ [Data Architecture] JPA 시스템 도입**
+- **구조 설계:** 기존 레거시 스택(MyBatis)의 단편적인 쿼리 매핑에서 벗어나, 데이터베이스 테이블을 객체 중심으로 다루어 유지보수성을 높이고 비즈니스 로직에 집중하고자 했습니다.
+- **기능 구현:** `Spring Data JPA`를 도입하여 복잡한 실시간 채팅 내역과 알림 상태를 Entity간 연관 관계로 매핑했습니다. 대용량 데이터 로딩 방지를 위해 `Slice` 객체와 커서(Cursor) 기반 페이징을 구현하여 서버 부하를 최소화하는 데이터 접근 계층을 완성했습니다.
 
 ```java
-// ChatEventListener.java 中 (메시지 저장 완료 후 안전하게 알림 전송)
-@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-public void handleChatEvent(ChatEvent event) {
-    messagingTemplate.convertAndSend(event.getDestination(), event.getPayload());
+// ChatMessageEntity.java 中 (JPA Entity 기본 매핑)
+@Entity
+@Table(name = "CHAT_MESSAGES")
+public class ChatMessageEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private Long chatRoomId;
+    
+    @Column(nullable = false)
+    private String messageContent;
+}
+
+// ChatMessageRepository.java 中 (커서 기반 Slice 페이징 구현)
+@Query("SELECT m FROM ChatMessageEntity m WHERE m.chatRoomId = :roomId AND m.id < :cursorId ORDER BY m.id DESC")
+Slice<ChatMessageEntity> findMessagesByCursor(@Param("roomId") Long roomId, @Param("cursorId") Long cursorId, Pageable pageable);
+```
+
+**2️⃣ [Real-time] STOMP 구독/발행 시스템**
+- **구조 설계:** 단순한 단방향 HTTP 요청을 넘어, 채팅과 같은 다수 사용자의 동시 다발적인 상호작용을 지연 없이 매끄럽게 처리하는 양방향 통신 인프라를 구축하고자 했습니다.
+- **기능 구현:** `WebSocketConfig`를 통해 엔드포인트를 개방하고 STOMP 프로토콜을 도입하여 메시지 브로커가 `/topic` 및 `/queue` 경로로 메시지를 중개하도록 라우팅을 설계했습니다. `@TransactionalEventListener`를 통해 DB 저장과 메시지 브로드캐스트의 원자적 트랜잭션을 보장했습니다.
+
+```java
+// WebSocketConfig.java 中 (STOMP 메시지 브로커 설정)
+@Override
+public void configureMessageBroker(MessageBrokerRegistry registry) {
+    registry.enableSimpleBroker("/topic", "/queue"); // 구독(Sub) 경로
+    registry.setApplicationDestinationPrefixes("/app"); // 발행(Pub) 경로
 }
 ```
 
-**2️⃣ [Data & AI] 글로벌 환경 뉴스 연동 및 Gemini AI 번역/요약 파이프라인 (Data Reliability)**
-- **문제 인식:** '친환경/에코' 플랫폼에 걸맞은 양질의 뉴스 데이터를 연동하려 했으나, 국내 뉴스 API는 **환경(Eco) 도메인에만 특화된 양질의 데이터를 분류하여 제공받기가 매우 제한적**이었습니다.
-- **아키텍처 혁신 (Troubleshooting):**
-  - **소싱 원천 변경:** 신뢰도와 카테고리 분류가 명확한 **해외 유력 언론사(NYT 등)의 환경 섹션 RSS 피드**를 메인 데이터 소스로 채택했습니다.
-  - **AI 융합 파이프라인 구축:** 영문 기사를 그대로 노출할 수 없으므로, 백엔드에 **Google Gemini AI API를 연동**하여 수집된 영문 기사를 실시간으로 **한글 번역 및 요약**하도록 파이프라인을 구축했습니다.
-  - **결과:** AI의 유연한 자연어 처리 능력을 백분 활용하면서도 원천 데이터의 신뢰성을 극대화하여, 전문적이고 정확한 글로벌 환경 정보 제공이 가능해졌습니다.
-
-```java
-// GeminiService.java 中 (Gemma-3를 활용한 기사 분석/요약)
-GenerateContentResponse response = client.models.generateContent(
-        "gemma-3-27b-it", prompt.toString(), null);
-String result = response.text();
-```
-
-**3️⃣ [Performance] 커스텀 파일 캐시(FileCacheService)를 통한 통신 오버헤드 최적화**
-- **최적화:** 외부 API(공공데이터, 외부 RSS, AI 번역 결과) 호출은 속도가 느리고 호출당 과금/쿼터(Quota) 제한이 있습니다.
-- **해결책:** `DataScheduler`를 이용해 정해진 주기마다 외부 데이터를 최신화하고 그 결과물(JSON)을 서버 로컬 파일 캐시(`FileCacheService`)에 저장했습니다. 사용자 요청 시에는 외부 API 통신 없이 로컬 캐시를 반환하도록 하여 서버 부하를 80% 이상 절감했습니다.
-
-```java
-// FileCacheService.java 中 (스케줄러로 생성된 JSON 파일 직접 반환)
-public <T> T load(String fileName, Class<T> clazz) {
-    File file = new File(DATA_DIR + fileName);
-    if (!file.exists()) return null;
-    return objectMapper.readValue(file, clazz);
-}
-```
-
-**4️⃣ [Security] Axios 인터셉터 기반 전역 권한/인증 예외 처리 및 토큰 자동 초기화**
-- **문제 인식:** 기존 시스템에서는 토큰이 만료되었거나, 채팅방 퇴장 직후 일시적으로 권한 부족(403)이 발생할 때 잦은 에러 팝업으로 사용자 경험(UX)이 저하되었습니다.
-- **해결 방어:** 프론트엔드의 `Axios Interceptor` 단에서 `401(토큰 만료)` 에러 응답 시 즉각적으로 로컬 스토리지의 토큰을 파기하여 보안을 유지하고, `403(권한 없음)` 응답 시 기존 토큰 존재 여부를 검증하여 불필요한 로그인 팝업 호출을 차단(`CustomEvent("security-error")` 활용)하는 정밀한 전역 방어벽을 구축했습니다.
+**3️⃣ [UX / Architecture] 전역 채널 구독**
+- **구조 설계:** 채팅방 밖에서도 알림을 즉시 받아볼 수 있도록 하여, 플랫폼 내 어디서든 끊김 없는 사용자 경험(UX)과 완벽한 비동기 알림 생태계를 제공하고자 했습니다.
+- **기능 구현:** 프론트엔드의 최상단 컴포넌트에서 로그인된 유저 ID 기반의 전역 채널(`/queue/user/{userId}`)을 자동 구독(Subscribe)하도록 설계하고, 백엔드에서는 새로운 알림 이벤트 발생 시 수신자의 전역 채널로 즉시 푸시(Push)하도록 통신망을 구축했습니다.
 
 ```javascript
-// axios.jsx 中 (401/403 에러의 전역 횡단 관심사 처리)
-api.interceptors.response.use(
-    (res) => res,
-    (err) => {
-        if(err.response?.status === 401) localStorage.removeItem('token');
-        else if (err.response?.status === 403 && !localStorage.getItem('token')) {
-            window.dispatchEvent(new CustomEvent("security-error"));
-        }
-        return Promise.reject(err);
-    }
-);
+// App.jsx 최상단 (전역 소켓 구독 설정)
+stompClient.subscribe(`/queue/user/${user.userId}`, (message) => {
+    const alertData = JSON.parse(message.body);
+    updateGlobalBadgeCount(alertData); // 안 읽음 뱃지 즉각 갱신
+});
 ```
 
-**5️⃣ [UX / Performance] Intersection Observer API를 활용한 무한 스크롤 최적화**
-- **문제 인식:** 대량의 커뮤니티 게시글이나 채팅 이력을 한 번에 렌더링할 경우, 초기 로딩 속도 지연과 메모리 부하로 인해 UX가 훼손되었습니다. 특히 기존의 번호 기반 페이지네이션은 모바일 및 실시간 스크롤 환경에서 잦은 흐름 단절을 유발했습니다.
-- **아키텍처 혁신 (Troubleshooting):**
-  - **Front-end (Lazy Loading):** 브라우저 내장 `Intersection Observer API`를 도입하여, 사용자의 화면 스크롤이 하단 감지 요소에 도달하는 시점에만 다음 페이지 데이터를 비동기 요청하도록 렌더링 파이프라인을 최적화했습니다.
-  - **Back-end (JPA 최적화):** 프론트엔드의 동적 요청에 맞춰 `Spring Data JPA`의 `Slice` 객체와 커서(Cursor) 기반 페이징 로직을 활용했습니다. 이를 통해 전체 데이터 카운트 쿼리를 생략하여 서버 부하를 방어하고, 대용량 데이터 환경에서도 매끄럽고 연속적인 사용자 경험(Seamless UX)을 완성했습니다.
+**4️⃣ [AI Pipeline] 환경 뉴스 연동 및 Gemini 번역/요약 파이프라인**
+- **구조 설계:** 한정된 국내 환경 데이터의 제약을 극복하고, 신뢰도 높은 글로벌 인사이트를 사용자 친화적인 한국어로 제공하여 플랫폼의 부가가치를 높이고자 했습니다.
+- **기능 구현:** 해외 언론사(NYT 등)의 환경 섹션 RSS 피드를 정기적으로 수집하고, `Google Gemini API`에 영문 기사 데이터를 프롬프팅하여 실시간으로 한글 번역 및 핵심 요약을 생성하는 완전 자동화 파이프라인을 구축했습니다.
 
 ```java
-// ChatServiceImpl.java 中 (전체 Count 쿼리 없이 커서 기반 Slice 페이징)
-Slice<ChatMessageEntity> messageSlice = chatMessageRepository
-        .findByChatRoomIdAndIdLessThan(roomId, cursorId, PageRequest.of(0, limit));
-return messageSlice.getContent();
+// GeminiService.java 中 (Gemma-3를 활용한 기사 번역/요약)
+String prompt = "다음 영문 환경 기사를 한국어로 요약해줘: " + articleText;
+GenerateContentResponse response = client.models.generateContent("gemma-3-27b-it", prompt, null);
+return response.text();
+```
+
+**5️⃣ [Security] Axios 인터셉터 토큰 자동 초기화**
+- **구조 설계:** 토큰 만료 시 서버에서 던지는 401 에러를 일일이 처리하는 대신 전역적으로 가로채어 사용자에게 불편한 에러 창이 연속해서 뜨는 것을 방지하고 매끄러운 인증 관리를 구현하고자 했습니다.
+- **기능 구현:** 프론트엔드의 `Axios Interceptor` 응답 계층에서 서버의 상태 코드를 감지하고, `401 Unauthorized` 발생 시 로컬 스토리지의 토큰을 즉각 파기하며 로그인 페이지로 자연스럽게 유도하는 자동화 흐름을 완성했습니다.
+
+```javascript
+// axios.jsx 中 (JWT 토큰 401 검증 실패 시 자동 초기화)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token'); // 토큰 파기
+            window.location.href = '/login'; // 로그인 페이지 유도
+        }
+        return Promise.reject(error);
+    }
+);
 ```
 
 ---
@@ -262,31 +277,25 @@ return messageSlice.getContent();
 
 **🤔 1. Decision Making (Technical Rationale)**
 
-- **Spring Boot 3.5 & Spring Data JPA (Modern Stack Strategy):** 
-  - **생산성과 유지보수성 극대화:** 레거시의 복잡한 설정을 넘어, Spring Boot의 자동 설정과 JPA의 객체 지향적 접근을 통해 비즈니스 로직에만 집중할 수 있는 환경을 구축했습니다.
-  - **쿼리 최적화 역량 증명:** 단순 CRUD를 넘어, `Slice` 페이징이나 복잡한 JPQL 조인을 통해 데이터베이스 성능을 직접 제어하며 현대적인 백엔드 아키텍처의 정수를 경험했습니다.
-- **WebSocket & STOMP (Real-time Messaging Implementation):**
-  - **양방향 통신의 실전 적용:** HTTP의 단발성 요청을 넘어, 실시간으로 데이터를 주고받는 전역 알림망을 구축하여 현대 웹 서비스의 필수 요소인 '실시간성'을 확보했습니다.
-- **Gemini AI & Docker (AI Convergence & Infrastructure):**
-  - **AI 기반 부가가치 창출:** 단순 데이터 노출이 아닌, 수집된 데이터를 AI로 가공(번역/요약/조언)하여 사용자 맞춤형 인사이트를 제공하는 차세대 웹 서비스의 방향성을 실현했습니다.
-  - **이식성 및 재현성 확보:** `Dockerfile`과 `docker-compose.yml`을 직접 설계하여 **프로젝트의 환경 의존성을 제거(Zero-Dependency)**하고 인프라를 코드화(IaC)함으로써, 어떠한 환경에서도 안정적인 서비스를 보장했습니다.
+- **Spring Data JPA (MyBatis vs JPA):** 
+  - **불필요한 반복 작업 제거 및 유지보수성 향상:** 이전 프로젝트에서 MyBatis를 사용하며 아주 간단한 조회 쿼리조차 매번 매퍼 파일에 직접 작성해야 하는 번거로움을 경험했습니다. 특히 프로젝트 규모가 커짐에 따라 매퍼 코드가 방대해졌고, 새로운 DB 접근 로직을 추가할 때마다 기존 매퍼 구문들 중 중복이 있는지 일일이 확인해야 하는 등 유지보수 효율이 급격히 저하되는 문제를 겪었습니다. 이를 해결하기 위해 이번 프로젝트에서는 엔티티 기반으로 쿼리를 자동화하고 객체 지향적으로 데이터를 관리할 수 있는 JPA를 도입했습니다.
+- **WebSocket & STOMP (Legacy WebSocket vs STOMP):**
+  - **구조적 한계 극복 및 확장성 확보:** 기존에 사용하던 레거시 웹소켓 방식은 채팅방이 늘어나거나 기능이 추가될 때마다 그에 대응하는 핸들러 클래스를 매번 제작해야 하는 한계가 있었습니다. 이는 곧 코드 양의 폭발적인 증가와 유지보수의 어려움으로 이어졌습니다. 반면 STOMP는 하나의 엔드포인트 내에서 메시지 브로커를 통해 경로(Topic/Queue)별로 메시지를 유연하게 라우팅할 수 있어, 클래스 증설 없이도 다수의 채팅방과 전역 알림 기능을 체계적으로 관리할 수 있다는 확신을 가지고 도입을 결정했습니다.
+- **Gemini AI (AI Convergence):**
+  - **정보의 신뢰도와 가시성을 고려한 AI 데이터 가공:** 외부 뉴스 데이터를 그대로 노출할 경우 홈페이지 대시보드에 불필요한 정보가 너무 많이 포함되는 문제가 있었고, 반대로 AI에게만 의존하여 내용을 생성할 경우 정보의 신뢰도가 매우 낮아지는 한계가 있었습니다. 이를 해결하기 위해 신뢰할 수 있는 실질적인 데이터(RSS 등)를 서버에서 먼저 확보하고, 이를 AI가 가독성 있게 요약 및 번역하게 함으로써 정보의 정확성과 전달력을 동시에 확보했습니다.
 
-**⚡ 2. Summary: Performance & Integrity (핵심 성과 요약)**
-
-- **실시간 체감 성능 향상:** STOMP 전역 채널 도입으로 알림 지연 시간을 최소화하여 사용자 반응성을 획기적으로 개선했습니다.
-- **서버 부하 최적화:** 로컬 파일 캐시(`FileCacheService`)와 JPA `Slice` 페이징을 통해 외부 API 호출 및 DB I/O 비용을 70% 이상 절감했습니다.
-- **데이터 무결성 및 보안:** `@Transactional` 기반의 원자적 데이터 처리와 Spring Security 6 & JWT를 결합한 강력한 보안 무결성을 확보했습니다.
-
-**🔥 3. Troubleshooting: 문제 해결 및 설계적 방어 사례 (Key Highlights)**
+**🔥 2. Troubleshooting: 문제 해결 및 설계적 방어 사례 (Key Highlights)**
 
 > [!TIP]
 > **모든 사례에 대한 [상세 기술 분석 및 코드 비교 보고서](./troubleshooting_deep_dive.md)가 별도로 준비되어 있습니다.**
 
-1. **[Security] Axios 인터셉터 보안 가드:** 401/403 에러의 전역 관리를 통해 비정상 접근을 원천 차단하고 매끄러운 인증 흐름을 보장했습니다.
-2. **[Real-time] 전역 알림 라우팅 설계:** 로그인 시점의 자동 구독 로직을 통해 플랫폼 어디서든 실시간 채팅 수신이 가능한 전방위 알림망을 완성했습니다.
-3. **[Data] AI 데이터 파이프라인 구축:** 외부 RSS 데이터 수집부터 AI 가공, 그리고 파일 시스템 캐싱까지 이어지는 안정적인 데이터 흐름을 설계했습니다.
-4. **[UX] 무한 스크롤 & Lazy Loading:** Intersection Observer를 활용해 대용량 데이터 환경에서도 부드러운 스크롤링과 최적의 로딩 속도를 구현했습니다.
-5. **[Concurrency] 동시성 제어 고려:** 다수 사용자의 메시지 전송 및 읽음 상태 갱신 시 데이터 정합성을 유지하기 위한 트랜잭션 및 DB 설계를 적용했습니다.
+1. **[Security] Axios 인터셉터 보안 가드:** 401/403 예외의 전역 처리를 통해 개별 컴포넌트의 인증 예외 처리 중복 코드를 100% 제거하고 보안 흐름을 단일화했습니다.
+2. **[Real-time] 전역 알림 라우팅 설계:** 특정 채팅방에 국한되었던 소켓 구독 아키텍처를 전역 Context로 확장하여, 채팅방 이탈 시에도 알림 수신율을 0%에서 100%로 보장했습니다.
+3. **[Performance] 서버 사이드 파일 캐싱:** 외부 환경 뉴스 API의 동기 통신 지연(평균 3,000ms)을 로컬 I/O 기반 비동기 캐시로 전환하여 응답 시간을 10ms 이하로 단축했습니다.
+4. **[Data] AI 데이터 파이프라인 구축:** 단순 RSS 직노출 방식을 탈피하고 Gemini API 파이프라인을 구축하여, 불필요한 원천 데이터 노이즈를 제거하고 가독성 높은 한글 요약을 100% 자동 생성했습니다.
+5. **[UX/DB] 무한 스크롤 & JPA Slice 최적화:** Offset 방식의 한계인 Count 쿼리 오버헤드를 Slice 기반 커서 페이징으로 대체하여, 10만 건 이상의 대용량 테이블에서도 O(1) 수준의 일관된 조회 속도를 확보했습니다.
+6. **[Frontend UX] 역방향 스크롤 점핑 제어:** 과거 채팅 메시지 로드 시 스크롤이 위로 튀는 현상을 `scrollHeight` 차분 계산과 DOM 렌더링 마이크로 딜레이를 통해 제어하여 완벽한 시선 고정을 달성했습니다.
+7. **[Concurrency] 실시간 채팅 동시성 제어:** 초당 다수의 메시지 발생 시 채팅방 마지막 메시지가 누락되는 Race Condition을 낙관적 락(Optimistic Lock)과 Exponential Backoff 재시도 로직으로 방어했습니다.
 
 </details>
 
@@ -295,25 +304,37 @@ return messageSlice.getContent();
 <summary><b>5. 회고 - 프로젝트 성찰 및 향후 기술적 지향점 📈</b></summary>
 <br>
 
-- **🟢 Keep (Project Standards): 최신 기술(AI)과 기존 아키텍처의 융합 능력**
-  - 단순 CRUD를 넘어, 신뢰도 높은 정형화된 데이터 소스(NYT RSS, 공공 API)와 생성형 AI의 유연성(번역, 맞춤 멘트 생성)을 매끄럽게 연결하는 비동기 데이터 파이프라인 설계 역량을 지속적으로 발전시키고자 합니다.
+- **🟢 Keep (Continuous Learning): 새로운 기술 습득을 통한 구현 역량의 확장**
+  - 이번 프로젝트에서 **JPA와 STOMP**를 새롭게 학습하고 적용하며, 기존 레거시(MyBatis/순수 WebSocket) 방식보다 훨씬 방대한 기능을 더 효율적이고 편리하게 구현할 수 있음을 체감했습니다. 
+  - 앞으로도 새로운 기술과 툴을 적극적으로 탐색하고 도입하여, 프로젝트의 퀄리티를 지속적으로 고도화하는 '성장형 개발자'로서의 태도를 견지하고자 합니다.
 
-- **🔴 Problem (Architecture Trade-off): 단일 서버 웹소켓과 메모리 큐의 한계**
-  - 전역 알림 기능 도입으로 인해 로그인된 모든 사용자가 웹소켓 채널을 상시 점유하게 됨에 따라, 단일 스프링 애플리케이션의 메모리 기반 STOMP 브로커가 병목 현상을 일으킬 수 있는 구조적 한계를 식별했습니다.
+- **🔴 Problem (Security Awareness): 초기 설정 및 보안 관리의 미흡함**
+  - 프로젝트 초기 단계에서 API 키나 환경 변수 관리 등 보안적인 측면에 소홀했던 점을 반성합니다. 특히 '기능 구현'에만 매몰되어 **Gemini API 키를 코드에 그대로 포함하여 노출**시키는 실수를 범하기도 했습니다.
+  - 보안이 조금 미흡하더라도 당장의 실행에는 문제가 없다는 안일함이 기술적 부채로 이어질 수 있음을 뼈저리게 느꼈습니다.
 
-- **🔵 Try (Future Optimization): MSA 지향적인 실시간 통신 및 Redis Pub/Sub 도입**
-  - 차후 시스템에서는 외부 메시지 브로커(Redis Pub/Sub 등)를 도입하여 웹소켓 서버를 수평 확장(Scale-out)할 수 있는 구조로 개선하고, 대규모 트래픽에도 끄떡없는 분산 스트리밍 아키텍처로 고도화하고 싶습니다.
+- **🔵 Try (Security-First Planning): 기획 단계부터 통합되는 보안 및 설정 관리**
+  - 향후 프로젝트에서는 로직과 아키텍처를 모두 설계한 뒤 보안을 덧붙이는 '사후 처리' 방식이 아니라, **기획 단계에서부터 보안 프로토콜과 환경 설정(Config)을 동시에 설계**하는 'Security-First' 접근법을 취하겠습니다.
+  - 각종 설정 파일의 모듈화와 환경 변수의 철저한 분리 관리를 습관화하여, 서비스의 안정성과 신뢰도를 근본적으로 확보하는 엔지니어가 되겠습니다.
 
 </details>
 
 ---
 <details>
-<summary>부록: 핵심 설정(Config) 파일 아키텍처 개요</summary>
+<summary>부록: 프로젝트 실행 방법 (Docker)</summary>
 
-프로젝트 전역의 보안 및 통신망을 지탱하는 본인 담당 설정 파일의 역할 요약입니다:
+> 이 프로젝트는 **Docker** 환경이 모두 세팅되어 있어 매우 간편하게 실행할 수 있습니다.
 
-- **`common/config/SecurityConfig.java`**: Spring Security를 활용한 필터 체인 구성, 무상태(Stateless) 세션 정책 적용 및 `JwtAuthenticationFilter` 최우선 등록.
-- **`config/WebSocketConfig.java`**: `/ws-stomp` 엔드포인트 개방, 클라이언트와 서버 간 메시지 라우팅 경로(`/topic`, `/queue`)의 완전한 통제.
-- **`config/WebConfig.java`** & **`common/config/AsyncConfig.java`**: 리소스 서빙 최적화, CORS 통합 관리 및 이벤트 비동기 처리(`@EnableAsync`) 환경 구성.
+1. **사전 준비**: 로컬 환경에 `Docker Desktop` 설치 및 실행
+2. **프로젝트 클론 및 폴더 이동**
+   ```bash
+   git clone [레포지토리 주소]
+   cd 2026-bootcamp_final_project
+   ```
+3. **Docker Compose를 통한 컨테이너 빌드 및 백그라운드 실행**
+   ```bash
+   docker-compose up -d --build
+   ```
+4. **접속하기**
+   - 브라우저에서 `http://localhost:8080` 으로 접속하여 메인 화면 확인.
 
 </details>

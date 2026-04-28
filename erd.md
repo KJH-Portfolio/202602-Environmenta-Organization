@@ -1,7 +1,7 @@
-# EasyEarth 파이널 프로젝트 ERD (Entity Relationship Diagram)
+# 🗄️ EasyEarth 물리 데이터 모델링 명세 (ERD Specification)
 
-> **전체 아키텍처 다이어그램 및 도메인별 상세 설계 명세 통합본**  
-> 이 문서는 실시간 채팅, 탄소 정밀 계산, 게이미피케이션 시스템의 모든 데이터 구조를 실제 DB와 100% 동일하게 정의합니다.
+> **탄소 중립 실천 및 게이미피케이션 시스템을 위한 물리 DB 설계 전략**  
+> 이 문서는 실시간 채팅, AI 환경 일기, 탄소 발자국 정밀 계산 시스템의 모든 테이블(31개)과 상세 제약조건을 실제 DB 구현체와 100% 동일하게 정의하며, 데이터 정합성을 위한 논리/물리 설계 근거를 명세합니다.
 
 ---
 
@@ -11,14 +11,15 @@
 3. [도메인 계층 구조 (Hierarchy View)](#2-도메인-계층-구조-hierarchy-view)
 4. [테이블 상세 명세 (Data Dictionary)](#3-테이블-상세-명세-data-dictionary)
 5. [도메인별 분리 ERD (Domain Specific)](#4-도메인별-분리-erd-domain-specific)
-6. [DB 성능 최적화 전략 (Index Strategy)](#5-db-성능-최적화-전략-index-strategy)
+6. [DB 성능 및 최적화 전략 (Index & Strategy)](#5-db-성능-및-최적화-전략-index--strategy)
 
 ---
 
 ## 💡 데이터 설계 및 정합성 유지 원칙 (Technical Note)
-- **수치 정밀도 (Precision)**: 탄소 절감량(`distance * 0.21`)과 같은 환경 수치는 데이터 손실 방지를 위해 Oracle `NUMBER(10, 3)` 타입을 적용하여 소수점 셋째 자리까지 관리합니다.
-- **보안 기반 설계**: 비밀번호는 `BCrypt` 10 rounds 암호화를 필수로 하며, `Stateless(JWT)` 인증을 지원하기 위한 사용자 식별 구조를 갖춥니다.
-- **거버넌스 및 자정 작용**: 신고(`BOARD_REPORTS`) 테이블과 연동하여 신고 10회 누적 시 게시글 상태를 `BLIND`로 자동 전환하는 로직을 데이터 수준에서 지원합니다.
+- **수치 정밀도 (Precision)**: 탄소 절감량(`CO2_GRAM`) 등 환경 수치는 데이터 손실 방지를 위해 Oracle `NUMBER(10, 2)` 타입을 적용하여 정밀하게 관리합니다.
+- **트리거 기반 자동화**: 회원가입 시 지갑(`POINT_WALLET`) 자동 생성, 리뷰 작성 시 상점 평점(`AVG_RATING`) 자동 갱신 등을 DB 트리거 레벨에서 처리하여 비즈니스 로직의 일관성을 확보했습니다.
+- **Soft Delete & Status**: 커뮤니티 게시글 및 댓글은 데이터 이력 보존을 위해 `STATUS` 컬럼('Y', 'N', 'B')을 활용한 논리 삭제 방식을 채택했습니다.
+- **실시간성 대응**: 채팅방의 마지막 메시지 정보(`LAST_MESSAGE_CONTENT`, `LAST_MESSAGE_AT`)를 부모 테이블에 반정규화하여 리스트 조회 성능을 최적화했습니다.
 
 ---
 
@@ -27,190 +28,182 @@
 ```mermaid
 erDiagram
     %% ──────────────────────────
-    %%  1. 회원 및 경제 생태계 (Member & Wallet)
+    %%  1. 회원 및 보안 (Identity)
     %% ──────────────────────────
-    MEMBERS {
-        varchar USER_ID PK
-        varchar USER_PWD "BCrypt 암호화"
-        varchar USER_NAME
-        varchar USER_NICKNAME
-        char    ONLINE_STATUS "Y/N 실시간 상태"
-        varchar USER_ROLE "ADMIN/MEMBER"
-        date    ENROLL_DATE
+    MEMBER {
+        number  MEMBER_ID PK
+        varchar LOGIN_ID UK
+        varchar PASSWORD
+        varchar NAME
+        number  IS_ONLINE "0/1"
+        number  TOTAL_POINTS
+        date    CREATED_AT
     }
 
-    WALLETS {
+    %% ──────────────────────────
+    %%  2. 경제 및 아이템 (Economy)
+    %% ──────────────────────────
+    POINT_WALLET {
         number  WALLET_ID PK
-        varchar USER_ID FK
-        number  CURRENT_POINTS
-        number  TOTAL_ACCUMULATED
+        number  MEMBER_ID FK
+        number  NOW_POINT
+        number  TOTAL_EARNED_POINT
     }
 
-    POINT_HISTORIES {
-        number  HISTORY_ID PK
-        number  WALLET_ID FK
-        varchar ACTION_TYPE "QUIZ/QUEST/ATTENDANCE"
-        number  AMOUNT
-        date    CREATED_AT
+    ITEM {
+        number  ITEM_ID PK
+        varchar NAME
+        number  PRICE
+        varchar RARITY
+        varchar CATEGORY "BADGE/BG/TITLE"
     }
 
-    %% ──────────────────────────
-    %%  2. 실시간 채팅 (Live Chat)
-    %% ──────────────────────────
-    CHAT_ROOMS {
-        number  ROOM_ID PK
-        varchar ROOM_TITLE
-        date    CREATED_AT
-    }
-
-    CHAT_PARTICIPANTS {
-        number  PARTICIPANT_ID PK
-        number  ROOM_ID FK
-        varchar USER_ID FK
-        varchar STATUS "PENDING/ACCEPTED/REJECTED"
-        date    JOINED_AT
-    }
-
-    CHAT_MESSAGES {
-        number  MSG_ID PK
-        number  ROOM_ID FK
-        varchar SENDER_ID FK
-        varchar MESSAGE_CONTENT
-        char    IS_DELETED "Soft Delete"
-        date    SENT_AT
+    USER_ITEMS {
+        number  UI_ID PK
+        number  ITEM_ID FK
+        number  MEMBER_ID FK
+        char    IS_EQUIPPED "Y/N"
     }
 
     %% ──────────────────────────
-    %%  3. 지도 및 탄소 기록 (Map & Eco)
+    %%  3. 환경 활동 및 AI (Activity & AI)
     %% ──────────────────────────
-    ECO_SHOPS {
-        number  SHOP_ID PK
-        varchar SHOP_NAME
-        varchar CATEGORY
-        varchar ADDRESS
-        number  LATITUDE
-        number  LONGITUDE
-    }
-
-    SHOP_REVIEWS {
-        number  REVIEW_ID PK
-        number  SHOP_ID FK
-        varchar USER_ID FK
-        varchar CONTENT
-        number  RATING
-    }
-
-    MAP_RECORDS {
-        number  RECORD_ID PK
-        varchar USER_ID FK
-        number  DISTANCE "KM 단위"
-        number  CARBON_REDUCED "NUMBER(10,3)"
-        date    CREATED_AT
-    }
-
-    %% ──────────────────────────
-    %%  4. 커뮤니티 및 보안 (Community)
-    %% ──────────────────────────
-    BOARDS {
-        number  BOARD_ID PK
-        varchar USER_ID FK
+    ECO_DIARY {
+        number  DIARY_ID PK
+        number  MEMBER_ID FK
         varchar TITLE
-        varchar CONTENT
-        varchar STATUS "NORMAL/BLIND"
-        number  VIEW_COUNT
-        date    CREATE_DATE
+        clob    CONTENT
+        date    CREATED_AT
     }
 
-    COMMENTS {
-        number  COMMENT_ID PK
-        number  BOARD_ID FK
-        varchar USER_ID FK
-        varchar CONTENT
-        char    IS_DELETED
+    ECO_DIARY_AI_REPLY {
+        number  EDAR_ID PK
+        number  DIARY_ID FK
+        clob    CONTENT
     }
 
-    BOARD_REPORTS {
-        number  REPORT_ID PK
-        number  BOARD_ID FK
-        varchar REPORTER_ID FK
-        varchar REASON
-        date    REPORTED_AT
-    }
-
-    %% ──────────────────────────
-    %%  5. 게이미피케이션 (Gamification)
-    %% ──────────────────────────
-    ECO_TREES {
+    ECO_TREE {
         number  TREE_ID PK
-        varchar USER_ID FK
-        number  LEVEL
-        number  CURRENT_XP
+        number  MEMBER_ID FK
+        number  TREE_LEVEL
+        number  EXP
     }
 
-    QUIZZES {
-        number  QUIZ_ID PK
-        varchar QUESTION
-        varchar ANSWER
-        number  REWARD_POINT
+    %% ──────────────────────────
+    %%  4. 정보 및 지도 (Map & Info)
+    %% ──────────────────────────
+    ECO_SHOP {
+        number  SHOP_ID PK
+        varchar NAME
+        varchar ADDRESS
+        number  LAT
+        number  LNG
+        number  AVG_RATING
     }
 
-    ATTENDANCES {
-        number  ATTENDANCE_ID PK
-        varchar USER_ID FK
-        date    ATTEND_DATE
+    ECO_SHOP_REVIEW {
+        number  ESR_ID PK
+        number  SHOP_ID FK
+        number  MEMBER_ID FK
+        number  RATING
+        clob    CONTENT
+    }
+
+    %% ──────────────────────────
+    %%  5. 실시간 채팅 (Real-time Messaging)
+    %% ──────────────────────────
+    CHAT_ROOM {
+        number  CHAT_ROOM_ID PK
+        varchar TITLE
+        varchar ROOM_TYPE "SINGLE/GROUP"
+        clob    LAST_MESSAGE_CONTENT
+    }
+
+    CHAT_ROOM_USER {
+        number  CHAT_ROOM_USER_ID PK
+        number  CHAT_ROOM_ID FK
+        number  MEMBER_ID FK
+        varchar ROLE "OWNER/MEMBER"
+    }
+
+    CHAT_MESSAGE {
+        number  MESSAGE_ID PK
+        number  CHAT_ROOM_ID FK
+        number  SENDER_ID FK
+        clob    CONTENT
+        varchar MESSAGE_TYPE
+    }
+
+    %% ──────────────────────────
+    %%  6. 커뮤니티 및 거버넌스 (Community)
+    %% ──────────────────────────
+    COMMUNITY_POST {
+        number  POST_ID PK
+        number  MEMBER_ID FK
+        varchar TITLE
+        varchar STATUS "Y/N/B"
+        number  REPORT_COUNT
+    }
+
+    REPORTS {
+        number  REPORTS_ID PK
+        number  MEMBER_ID FK "신고자"
+        number  TARGET_MEMBER_ID FK "피신고자"
+        varchar TYPE "POST/REPLY/REVIEW"
+        varchar REASON
     }
 
     %% ══════════════════════════
-    %%  관계 정의 (Full Relationships)
+    %%  관계 정의 (Full Logical)
     %% ══════════════════════════
 
-    MEMBERS ||--|| WALLETS : "소유"
-    WALLETS ||--o{ POINT_HISTORIES : "증감내역"
-    MEMBERS ||--|| ECO_TREES : "성장"
+    MEMBER ||--|| POINT_WALLET : "지갑소유"
+    MEMBER ||--o{ USER_ITEMS : "보유"
+    ITEM ||--o{ USER_ITEMS : "등록됨"
     
-    MEMBERS ||--o{ CHAT_PARTICIPANTS : "참여"
-    CHAT_ROOMS ||--o{ CHAT_PARTICIPANTS : "소속"
-    CHAT_ROOMS ||--o{ CHAT_MESSAGES : "포함"
-    MEMBERS ||--o{ CHAT_MESSAGES : "발신"
+    MEMBER ||--o{ ECO_DIARY : "작성"
+    ECO_DIARY ||--|| ECO_DIARY_AI_REPLY : "AI응답"
+    MEMBER ||--|| ECO_TREE : "육성"
 
-    MEMBERS ||--o{ MAP_RECORDS : "기록"
-    ECO_SHOPS ||--o{ SHOP_REVIEWS : "후기"
-    MEMBERS ||--o{ SHOP_REVIEWS : "작성"
+    ECO_SHOP ||--o{ ECO_SHOP_REVIEW : "포함"
+    MEMBER ||--o{ ECO_SHOP_REVIEW : "작성"
 
-    MEMBERS ||--o{ BOARDS : "작성"
-    BOARDS ||--o{ COMMENTS : "댓글"
-    BOARDS ||--o{ BOARD_REPORTS : "피신고"
-    MEMBERS ||--o{ BOARD_REPORTS : "신고접수"
+    CHAT_ROOM ||--o{ CHAT_ROOM_USER : "참여"
+    MEMBER ||--o{ CHAT_ROOM_USER : "소속"
+    CHAT_ROOM ||--o{ CHAT_MESSAGE : "기록"
+    MEMBER ||--o{ CHAT_MESSAGE : "발신"
 
-    MEMBERS ||--o{ ATTENDANCES : "출석"
+    MEMBER ||--o{ COMMUNITY_POST : "작성"
+    COMMUNITY_POST ||--o{ REPORTS : "피신고"
+    MEMBER ||--o{ REPORTS : "신고접수"
 ```
 
 ---
 
-## 📊 2. 도메인 계층 구조 (Hierarchy View)
-- 시스템의 데이터 의존성 및 생명주기를 고려한 계층적 설계도입니다.
+## 🔄 2. 도메인 계층 구조 (Hierarchy View)
 
-```mermaid
-graph TD
-    %% 1단계: 기반 데이터
-    BASE[👤 회원 및 인증]
-    
-    %% 2단계: 핵심 도메인
-    BASE --> MAP[🌏 에코 맵/기록]
-    BASE --> CHAT[💬 실시간 채팅]
-    BASE --> BOARD[📝 커뮤니티]
-    
-    %% 3단계: 연관 생태계
-    MAP --> WALLET[💰 포인트/지갑]
-    BOARD --> REPORT[🚨 신고/거버넌스]
-    WALLET --> TREE[🌱 게이미피케이션/성장]
-    
-    style BASE fill:#f9f,stroke:#333,stroke-width:2px
-    style MAP fill:#bbf,stroke:#333
-    style CHAT fill:#bbf,stroke:#333
-    style BOARD fill:#bbf,stroke:#333
-    style WALLET fill:#dfd,stroke:#333
-    style TREE fill:#dfd,stroke:#333
+```text
+MEMBER (MEMBER_ID)
+  ├── POINT_WALLET (MEMBER_ID)
+  │     └── POINT_TRANSACTIONS (MEMBER_ID)
+  ├── ECO_TREE (MEMBER_ID)
+  ├── ECO_DIARY (MEMBER_ID)
+  │     └── ECO_DIARY_AI_REPLY (DIARY_ID)
+  ├── USER_ITEMS (MEMBER_ID) ← ITEM (ITEM_ID)
+  ├── CHAT_ROOM_USER (MEMBER_ID) ← CHAT_ROOM (CHAT_ROOM_ID)
+  │     └── CHAT_MESSAGE (CHAT_ROOM_ID)
+  │           └── MESSAGE_REACTION (MESSAGE_ID)
+  ├── COMMUNITY_POST (MEMBER_ID)
+  │     ├── POST_FILES (POST_ID)
+  │     ├── COMMUNITY_REPLY (POST_ID)
+  │     ├── COMMUNITY_POST_LIKES (POST_ID)
+  │     └── REPORTS (POST_ID)
+  ├── ATTENDANCE (MEMBER_ID)
+  ├── DAILY_QUEST (MEMBER_ID) ← QUEST (QUEST_ID)
+  ├── INQUIRIES (MEMBER_ID)
+  └── ECO_SHOP_REVIEW (MEMBER_ID) ← ECO_SHOP (SHOP_ID)
+        ├── ECO_SHOP_SUGGESTION (SHOP_ID)
+        └── ROUTE_COMPARE (SHOP_ID)
 ```
 
 ---
@@ -220,109 +213,174 @@ graph TD
 ### 🔑 주요 컬럼 제약사항
 | 테이블 | 컬럼 | 타입 | 제약조건 | 설명 / 비고 |
 |---|---|---|---|---|
-| `MEMBERS` | `USER_PWD` | VARCHAR2(100) | NN | **BCrypt** 해시 암호화 (Stateless 권장) |
-| `MEMBERS` | `ONLINE_STATUS` | CHAR(1) | DEFAULT 'N' | WebSocket 세션 연결 상태 동기화 |
-| `MAP_RECORDS` | `CARBON_REDUCED`| NUMBER(10,3) | NN | 탄소 절감량 (소수점 3자리 정밀도) |
-| `BOARDS` | `STATUS` | VARCHAR2(10) | DEFAULT 'NORMAL' | 신고 10회 누적 시 자동으로 `BLIND` 전환 |
-| `CHAT_MESSAGES`| `IS_DELETED` | CHAR(1) | DEFAULT 'N' | 메시지 삭제 시 물리 삭제 대신 상태 변경 |
-| `ECO_TREES` | `CURRENT_XP` | NUMBER | DEFAULT 0 | 획득 경험치 (레벨업 임계값 로직 연동) |
+| `MEMBER` | `PASSWORD` | VARCHAR2(100) | NN | **BCrypt** 해시 암호화 (Stateless/JWT 필수) |
+| `MEMBER` | `IS_ONLINE` | NUMBER(1) | DEFAULT 0 | WebSocket 접속 상태 (0:오프라인, 1:온라인) |
+| `ECO_SHOP` | `AVG_RATING` | NUMBER(3,2) | DEFAULT 0 | 상점 평균 별점 (리뷰 작성 시 트리거 갱신) |
+| `QUEST` | `CO2_GRAM` | NUMBER(10) | DEFAULT 0 | 퀘스트 완료 시 절감되는 탄소량(g) |
+| `CHAT_ROOM` | `ROOM_TYPE` | VARCHAR2(20) | NN | `SINGLE`(1:1), `GROUP`(다대다) 구분 |
+| `COMMUNITY_POST`| `STATUS` | VARCHAR2(1) | DEFAULT 'Y' | `Y`(정상), `N`(삭제), `B`(블라인드) |
+| `REPORTS` | `TYPE` | VARCHAR2(20) | NN | `POST`, `REPLY`, `REVIEW` 중 하나 필수 |
 
 ### 🏷️ 시퀀스(Sequence) 목록
 | 시퀀스명 | 적용 테이블.컬럼 | 시퀀스명 | 적용 테이블.컬럼 |
 |---|---|---|---|
-| `SEQ_CHAT_ROOM` | CHAT_ROOMS.ROOM_ID | `SEQ_CHAT_MSG` | CHAT_MESSAGES.MSG_ID |
-| `SEQ_BOARD_ID` | BOARDS.BOARD_ID | `SEQ_POINT_HIS` | POINT_HISTORIES.HISTORY_ID |
-| `SEQ_MAP_REC` | MAP_RECORDS.RECORD_ID | `SEQ_SHOP_ID` | ECO_SHOPS.SHOP_ID |
+| `MEMBER_SEQ` | MEMBER.MEMBER_ID | `SEQ_WALLET_ID` | POINT_WALLET.WALLET_ID |
+| `POST_ID_SEQ` | COMMUNITY_POST.POST_ID | `REPLY_ID_SEQ` | COMMUNITY_REPLY.REPLY_ID |
+| `SEQ_ITEM_ID` | ITEM.ITEM_ID | `SEQ_SHOP_ID` | ECO_SHOP.SHOP_ID |
+| `REPORTS_ID_SEQ`| REPORTS.REPORTS_ID | `SEQ_ATTENDANCE_ID`| ATTENDANCE.ATTENDANCE_ID |
 
 ---
 
 ## 🗂️ 4. 도메인별 분리 ERD (Domain Specific)
 
-### 💰 3.1 Eco-Wallet & Economic System
-> 사용자의 모든 활동 보상을 정밀하게 추적하고 관리합니다.
-
+### 👤 4.1 회원 및 인증 도메인 (Identity & Security)
 ```mermaid
 erDiagram
-    MEMBERS {
-        varchar USER_ID PK
-        varchar USER_NAME
+    MEMBER {
+        number MEMBER_ID PK
+        varchar LOGIN_ID UK
+        varchar PASSWORD
+        varchar NAME
+        number IS_ONLINE
+        date CREATED_AT
     }
-    WALLETS {
-        number  WALLET_ID PK
-        varchar USER_ID FK
-        number  CURRENT_POINTS
-        number  TOTAL_ACCUMULATED
+    ATTENDANCE {
+        number ATTENDANCE_ID PK
+        number MEMBER_ID FK
+        date ATTEND_DATE
+        number STREAK_DAYS
     }
-    POINT_HISTORIES {
-        number  HISTORY_ID PK
-        number  WALLET_ID FK
-        varchar ACTION_TYPE
-        number  AMOUNT
-        date    CREATED_AT
-    }
-    MEMBERS ||--|| WALLETS : "지갑 소유"
-    WALLETS ||--o{ POINT_HISTORIES : "포인트 변동"
-```
-
-### 💬 3.2 Real-time Messaging (STOMP)
-> WebSocket 세션과 STOMP 브로드캐스팅을 위한 메시지 구조입니다.
-
-```mermaid
-erDiagram
-    CHAT_ROOMS {
-        number  ROOM_ID PK
-        varchar ROOM_TITLE
-    }
-    CHAT_PARTICIPANTS {
-        number  PARTICIPANT_ID PK
-        number  ROOM_ID FK
-        varchar USER_ID FK
-        varchar STATUS "ACCEPTED/REJECTED"
-    }
-    CHAT_MESSAGES {
-        number  MSG_ID PK
-        number  ROOM_ID FK
-        varchar SENDER_ID FK
-        varchar MESSAGE_CONTENT
-        date    SENT_AT
-    }
-    CHAT_ROOMS ||--o{ CHAT_PARTICIPANTS : "참여자 목록"
-    CHAT_ROOMS ||--o{ CHAT_MESSAGES : "메시지 이력"
-```
-
-### 📝 3.3 Community & Self-Moderation
-> 게시판과 신고 시스템을 연동한 커뮤니티 거버넌스 구조입니다.
-
-```mermaid
-erDiagram
-    BOARDS {
-        number  BOARD_ID PK
-        varchar USER_ID FK
+    INQUIRIES {
+        number INQUIRIES_ID PK
+        number MEMBER_ID FK
         varchar TITLE
-        varchar STATUS "NORMAL/BLIND"
+        clob CONTENT
+        varchar STATUS "SUBMITTED/PROCESSING/COMPLETED"
     }
-    COMMENTS {
-        number  COMMENT_ID PK
-        number  BOARD_ID FK
-        varchar USER_ID FK
-        varchar CONTENT
+    MEMBER ||--o{ ATTENDANCE : "출석기록"
+    MEMBER ||--o{ INQUIRIES : "1:1문의"
+```
+
+### 💬 4.2 실시간 채팅 도메인 (Real-time Messaging)
+```mermaid
+erDiagram
+    CHAT_ROOM {
+        number CHAT_ROOM_ID PK
+        varchar TITLE
+        varchar ROOM_TYPE
+        clob LAST_MESSAGE_CONTENT
+        timestamp LAST_MESSAGE_AT
     }
-    BOARD_REPORTS {
-        number  REPORT_ID PK
-        number  BOARD_ID FK
-        varchar REPORTER_ID FK
-        varchar REASON
+    CHAT_ROOM_USER {
+        number CHAT_ROOM_USER_ID PK
+        number CHAT_ROOM_ID FK
+        number MEMBER_ID FK
+        varchar ROLE
     }
-    BOARDS ||--o{ COMMENTS : "댓글"
-    BOARDS ||--o{ BOARD_REPORTS : "신고 누적"
+    CHAT_MESSAGE {
+        number MESSAGE_ID PK
+        number CHAT_ROOM_ID FK
+        number SENDER_ID FK
+        clob CONTENT
+        varchar MESSAGE_TYPE "TEXT/IMAGE/FILE"
+    }
+    MESSAGE_REACTION {
+        number REACTION_ID PK
+        number MESSAGE_ID FK
+        number MEMBER_ID FK
+        varchar EMOJI_TYPE
+    }
+    CHAT_ROOM ||--o{ CHAT_ROOM_USER : "참여현황"
+    CHAT_ROOM ||--o{ CHAT_MESSAGE : "메시지이력"
+    CHAT_MESSAGE ||--o{ MESSAGE_REACTION : "반응"
+```
+
+### 🌱 4.3 게이미피케이션 도메인 (Gamification & Carbon)
+```mermaid
+erDiagram
+    ECO_TREE {
+        number TREE_ID PK
+        number MEMBER_ID FK
+        number TREE_LEVEL
+        number EXP
+        varchar STAGE
+    }
+    QUEST {
+        number QUEST_ID PK
+        varchar TITLE
+        number BASE_POINT
+        number CO2_GRAM
+    }
+    DAILY_QUEST {
+        number DQ_ID PK
+        number MEMBER_ID FK
+        number QUEST_ID FK
+        number IS_COMPLETED "0/1"
+    }
+    MEMBER_IMPACT_SUMMARY {
+        number UIS_ID PK
+        number MEMBER_ID FK
+        number TOTAL_CO2_GRAM
+        number TOTAL_TREE_COUNT
+    }
+    MEMBER ||--|| ECO_TREE : "성장관리"
+    MEMBER ||--o{ DAILY_QUEST : "일일퀘스트"
+    QUEST ||--o{ DAILY_QUEST : "배정"
+    MEMBER ||--|| MEMBER_IMPACT_SUMMARY : "환경기여도"
+```
+
+### 💰 4.4 에코 경제 도메인 (Eco-Economy)
+```mermaid
+erDiagram
+    POINT_WALLET {
+        number WALLET_ID PK
+        number MEMBER_ID FK
+        number NOW_POINT
+        number TOTAL_EARNED_POINT
+    }
+    POINT_TRANSACTIONS {
+        number TRANSACTION_ID PK
+        number MEMBER_ID FK
+        number AMOUNT_POINT
+        varchar SOURCE_TYPE "QUEST/QUIZ/SHOP"
+    }
+    ITEM {
+        number ITEM_ID PK
+        varchar NAME
+        number PRICE
+        varchar RARITY "COMMON/RARE/EPIC/LEGENDARY"
+        varchar CATEGORY
+    }
+    USER_ITEMS {
+        number UI_ID PK
+        number ITEM_ID FK
+        number MEMBER_ID FK
+        char IS_EQUIPPED
+    }
+    POINT_WALLET ||--o{ POINT_TRANSACTIONS : "입출금내역"
+    MEMBER ||--o{ USER_ITEMS : "구매목록"
+    ITEM ||--o{ USER_ITEMS : "아이템정보"
 ```
 
 ---
 
-## ⚡ 5. DB 성능 최적화 전략 (Index Strategy)
+## ⚡ 5. DB 성능 및 최적화 전략 (Index & Strategy)
 
-| 분류 | 대상 테이블 | 대상 컬럼 | 기대 효과 |
-|---|---|---|---|
-| **채팅 페이징** | `CHAT_MESSAGES` | `ROOM_ID, SENT_AT` | 특정 방의 메시지 최신순 조회 가속 |
-| **지도 공간 검색** | `ECO_SHOPS` | `LATITUDE, LONGITUDE` | 현재 위치 기반 주변 상점 검색 최적화 |
-| **포인트 정산** | `POINT_HISTORIES`| `WALLET_ID, CREATED_AT` | 월별/활동별 리포트 산출 성능 향상 |
+### 5.1 인덱스 설계 (Indexing)
+- **복합 인덱스 (`IDX_ROOM_MEMBER_COMP`)**: `CHAT_ROOM_USER` 테이블의 `CHAT_ROOM_ID`와 `MEMBER_ID`에 복합 인덱스를 적용하여 특정 사용자가 속한 채팅방 검색 및 중복 참여 방지 성능을 극대화했습니다.
+- **시계열 인덱스**: `CHAT_MESSAGE.CREATED_AT` 및 `COMMUNITY_POST.CREATED_AT`에 인덱스를 고려하여 최신 데이터 페이징 성능을 확보했습니다.
+
+### 5.2 정합성 및 자동화 (Integrity & Automation)
+- **트리거(`TRG_MEMBER_REGISTERED`)**: 신규 회원 가입 시 `POINT_WALLET` 및 기본 포인트를 자동으로 생성하여 애플리케이션 계층의 부담을 줄이고 데이터 누락을 방지합니다.
+- **자율 트랜잭션(`PRAGMA AUTONOMOUS_TRANSACTION`)**: 리뷰 작성 시 상점의 평균 평점을 계산하는 트리거(`TRG_UPDATE_AVG_RATING`)를 독립 트랜잭션으로 처리하여, 메인 트랜잭션(리뷰 저장)의 성능 저하 없이 정확한 수치를 유지합니다.
+
+### 5.3 저장 구조 최적화 (Storage Optimization)
+- **CLOB 타입 활용**: 채팅 내용, 게시글 본문, AI 응답 등 대용량 텍스트 데이터는 `CLOB` 타입을 사용하여 데이터 크기 제한 문제를 해결했습니다.
+- **반정규화 전략**: 채팅방 테이블(`CHAT_ROOM`)에 마지막 메시지 정보를 보관하여, 채팅 목록 조회 시 수만 건의 메시지 테이블을 조인하지 않고도 실시간 프리뷰를 제공할 수 있도록 설계했습니다.
+
+---
+
+### 💡 설계 결정 근거 (Design Rationale)
+- **Oracle Sequence**: 모든 PK에 시퀀스를 적용하여 분산 환경에서도 충돌 없는 고유성을 보장합니다.
+- **Check Constraints**: `IS_ONLINE (0,1)`, `STATUS (Y,N,B)` 등 도메인 범위를 DB 수준에서 강제하여 잘못된 데이터 삽입을 원천 차단했습니다.
+- **Relational Integrity**: `ON DELETE CASCADE`를 적재적소에 배치하여 회원 탈퇴 시 연관된 개인 정보(일기, 지갑 등)가 완벽히 정제되도록 설계했습니다.
