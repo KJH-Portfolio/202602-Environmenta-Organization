@@ -471,7 +471,7 @@ MEMBER (MEMBER_ID)
 
 본 섹션은 `EasyEarth` 시스템의 데이터 정합성과 성능 최적화를 위해 설계된 **34개 전체 테이블**의 물리적 명세를 실제 `init_db.sql` 스크립트와 100% 동기화하여 기술합니다.
 
-### 🔑 3.1 회원 및 보안 (Identity & Security)
+### 4.1 회원 및 보안 (Identity & Security)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **MEMBER** | `MEMBER_ID` | NUMBER | PK | 내부 식별용 고유 번호 |
@@ -508,7 +508,7 @@ MEMBER (MEMBER_ID)
 | | `RESOLVED_AT` | DATE | - | 해결 일자 |
 | | `VIEW_COUNT` | NUMBER | DEF 0 | 조회수 |
 
-### 🌱 3.2 게이미피케이션 및 성장 (Gamification)
+### 4.2 게이미피케이션 및 성장 (Gamification)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **QUEST** | `QUEST_NO` | NUMBER | PK | 퀘스트 고유 번호 |
@@ -563,7 +563,7 @@ MEMBER (MEMBER_ID)
 | | `IMAGE_URL` | VARCHAR2(500)| - | 인증 사진 경로 |
 | | `CREATED_AT` | DATE | DEF SYS | 일자 |
 
-### 💬 3.3 실시간 채팅 및 반응 (Real-time Messaging)
+### 4.3 실시간 채팅 및 반응 (Real-time Messaging)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **CHAT_ROOM** | `CHAT_ROOM_ID` | NUMBER | PK | 채팅방 고유 번호 |
@@ -600,7 +600,7 @@ MEMBER (MEMBER_ID)
 | | `MEMBER_ID` | NUMBER | FK | 반응 작성자 |
 | | `EMOJI_TYPE` | VARCHAR2(50) | NN | 선택된 이모지 코드 |
 
-### 🌏 3.4 에코 맵 및 AI (Eco-Map & Gemini AI)
+### 4.4 에코 맵 및 AI (Eco-Map & AI)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **ECO_SHOP_CATEGORY**| `ESC_ID` | NUMBER | PK | 상점 카테고리 번호 |
@@ -649,7 +649,7 @@ MEMBER (MEMBER_ID)
 | | `CONTENT` | CLOB | NN | AI 생성 답변 본문 |
 | | `CREATED_AT` | DATE | DEF SYS | - |
 
-### 💰 3.5 경제 및 아이템 (Eco-Economy)
+### 4.5 경제 및 아이템 (Eco-Economy)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **POINT_WALLET** | `WALLET_ID` | NUMBER | PK | 지갑 고유 번호 |
@@ -683,7 +683,7 @@ MEMBER (MEMBER_ID)
 | | `SPENT_POINT` | NUMBER | NN | 소모된 포인트 |
 | | `CREATED_AT` | DATE | DEF SYS | - |
 
-### 📝 3.6 커뮤니티 및 거버넌스 (Community)
+### 4.6 커뮤니티 및 거버넌스 (Community)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **COMMUNITY_POST**| `POST_ID` | NUMBER | PK | 게시글 고유 번호 |
@@ -731,7 +731,7 @@ MEMBER (MEMBER_ID)
 | | `STATUS` | VARCHAR2(30) | - | RECEIVED 등 |
 | | `CREATED_AT` / `RESOLVED_AT`| DATE | - | - |
 
-### 📊 3.7 통계 및 기여도 (Impact Statistics)
+### 4.7 통계 및 기여도 (Impact Statistics)
 | 테이블 | 컬럼명 | 데이터 타입 | 제약조건 | 기술적 설계 의도 및 비고 |
 |---|---|---|---|---|
 | **MEMBER_IMPACT_SUMMARY**| `UIS_ID` | NUMBER | PK | 회원별 환경 기여도 요약 |
@@ -753,9 +753,7 @@ MEMBER (MEMBER_ID)
 
 ## 🗂️ 5. 도메인별 분리 ERD (Domain Specific)
 
-*(각 도메인 다이어그램은 전체 관계도를 기능별로 분할하여 확인이 용이합니다)*
-
-### 4.1 회원 및 보안 (Identity)
+### 5.1 회원 및 보안 (Identity)
 ```mermaid
 erDiagram
     MEMBER ||--|| POINT_WALLET : "소유"
@@ -786,7 +784,7 @@ erDiagram
     }
 ```
 
-### 4.2 환경 활동 및 퀘스트 (Eco-Activity & AI)
+### 5.2 환경 활동 및 AI (Eco-Activity & AI)
 ```mermaid
 erDiagram
     MEMBER ||--o{ DAILY_QUEST : "수행"
@@ -828,7 +826,7 @@ erDiagram
     }
 ```
 
-### 4.3 경제, 아이템 및 에코맵 (Economy & Eco-Map)
+### 5.3 경제, 아이템 및 에코맵 (Economy & Eco-Map)
 ```mermaid
 erDiagram
     MEMBER ||--|| POINT_WALLET : "지갑"

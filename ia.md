@@ -4,8 +4,8 @@
 ---
 # 🗺️ EasyEarth 파이널 프로젝트 IA (Information Architecture)
 
-> **사용자 경험(UX) 중심의 컴포넌트 계층 구조 및 API 통신 명세**  
-> 이 문서는 React 기반 프론트엔드의 라우팅 구조(`AppRouter.jsx`)와 백엔드 API 엔드포인트를 기반으로 플랫폼의 정보 구조와 데이터 흐름을 정의합니다.
+> **사용자 경험(UX) 중심의 페이지 계층 구조 및 API 서비스 명세**  
+> 이 문서는 서비스의 주요 메뉴 구조와 내비게이션 흐름, 그리고 백엔드 API 엔드포인트를 기반으로 플랫폼의 정보 구조와 데이터 흐름을 정의합니다.
 
 ---
 
@@ -38,9 +38,6 @@ graph TD
 
 ## 2. 도메인별 상세 아키텍처
 
-> [!NOTE]
-> 실시간 양방향 통신이 발생하는 **채팅 시스템**과 외부 API 및 생성형 AI가 융합된 **환경(날씨/뉴스) 시스템**은 본 플랫폼의 백엔드 핵심 코어 인프라이므로, 하기에 상세 프로세스를 정의합니다.
-
 ### 💬 2.1 채팅 도메인 (Chat & Notification)
 전역(Global) 알림을 수신하는 메인 소켓 채널과 각 채팅방 내부의 로컬 통신 채널이 병렬적으로 동작합니다.
 
@@ -69,6 +66,41 @@ graph LR
     style N_RSS fill:#03A9F4,color:#fff
 ```
 
+### 📝 2.3 에코 커뮤니티 (Community & Governance)
+사용자 간의 환경 지식 공유 및 신고 시스템을 통한 거버넌스를 구축했습니다.
+
+```mermaid
+graph LR
+    CO_LIST["📝 커뮤니티 리스트<br/>(/community)"] --> CO_DETAIL["게시글 상세<br/>(PostDetail.jsx)"]
+    CO_DETAIL --> CO_REPLY["댓글 및 리액션<br/>(ReplySection.jsx)"]
+    CO_DETAIL --> CO_REP["신고 처리<br/>(ReportsModal.jsx)"]
+
+    style CO_LIST fill:#9C27B0,color:#fff
+```
+
+### 💰 2.4 경제 및 아이템 (Economy & Shop)
+활동으로 획득한 포인트를 소비하고, 지도를 통해 친환경 매장을 탐색합니다.
+
+```mermaid
+graph LR
+    S_MAP["🗺️ 에코 맵<br/>(EcoMap.jsx)"] --> S_DETAIL["매장 상세/리뷰<br/>(ShopDetail.jsx)"]
+    S_MAP --> S_ROUTE["탄소 저감 경로 비교<br/>(RouteCompare.jsx)"]
+    P_SHOP["🛍️ 아이템 샵<br/>(ItemShop.jsx)"] --> P_PULL["랜덤 가챠<br/>(GachaSystem.jsx)"]
+
+    style S_MAP fill:#4CAF50,color:#fff
+```
+
+### 🌿 2.5 마이페이지 및 통계 (MyPage & Stats)
+에코 다이어리와 AI 분석을 통해 사용자의 환경 기여도를 시각화합니다.
+
+```mermaid
+graph LR
+    M_DIARY["📖 에코 다이어리<br/>(EcoDiary.jsx)"] --> M_AI["AI 감정/실천 분석<br/>(GeminiReply)"]
+    M_STATS["📊 임팩트 통계<br/>(ImpactStats.jsx)"] --> M_TREE["에코 트리 성장<br/>(EcoTree.jsx)"]
+
+    style M_STATS fill:#607D8B,color:#fff
+```
+
 ---
 
 ## 📑 3. 페이지 및 API 상세 명세
@@ -80,6 +112,13 @@ graph LR
 | **날씨** | 전국 기상청 공공데이터 | `/weather/forecast` | REST (JSON) | PublicRoute |
 | **AI 비서** | AI 기반 실천 조언 | `/gemini/secretary` | REST (JSON) | PublicRoute |
 | **뉴스** | 글로벌 환경 뉴스 연동 | `/global/eco-news` | REST (JSON) | PublicRoute |
+| **커뮤니티**| 게시글 필터 검색 | `/community/list` | REST (JSON) | PublicRoute |
+| **커뮤니티**| 게시글 상세 및 댓글 | `/community/post/:id` | REST (JSON) | PublicRoute |
+| **에코맵** | 주변 친환경 매장 검색 | `/shop/list` | REST (JSON) | PublicRoute |
+| **에코맵** | 경로별 탄소 절감 비교 | `/route/compare` | REST (JSON) | PublicRoute |
+| **아이템** | 가챠 및 아이템 구매 | `/item/purchase` | REST (JSON) | PrivateRoute |
+| **다이어리**| AI 일기 분석 요청 | `/diary/analyze` | REST (JSON) | PrivateRoute |
+| **통계** | 개인 환경 임팩트 리포트 | `/member/impact` | REST (JSON) | PrivateRoute |
 | **인증** | 카카오 소셜 연동 | `/api/auth/kakao` | REST (JSON) | PublicRoute |
 | **보안** | JWT 토큰 갱신 | `/api/auth/refresh` | REST (JSON) | PrivateRoute |
 | **회원** | 프로필 및 지갑 내역 | `/member/profile` | REST (JSON) | PrivateRoute |

@@ -81,6 +81,21 @@ src/
 - **중앙 집중형 관리**: 모든 페이지 경로를 `AppRouter.jsx` 한 곳에서 관리하여 가독성을 높였습니다.
 - **권한 가드(Guard)**: `PrivateRoute`, `PublicRoute`, `AdminRoute`를 통해 인증 상태에 따른 자동 리다이렉션을 수행합니다.
 
+```mermaid
+graph TD
+    APP["AppRouter.jsx"]
+    APP --> PUB["🌐 Public Routes<br/>(Home, Login, News)"]
+    APP --> PRI["🔐 Private Routes<br/>(Chat, MyPage, Community)"]
+    APP --> ADM["🔒 Admin Routes<br/>(Dashboard, Reports)"]
+    
+    PRI --> GUARD["AuthGuard / PrivateRoute"]
+    GUARD -- "Unauthorized" --> LOGIN["Login.jsx"]
+    GUARD -- "Authorized" --> CONTENT["Actual Content"]
+
+    style PRI fill:#FFEB3B
+    style ADM fill:#F44336,color:#fff
+```
+
 ```javascript
 // src/router/AppRouter.jsx (주요 구조)
 <Routes>
@@ -97,8 +112,9 @@ src/
 </Routes>
 ```
 
-### 3.2 PrivateRouter (Guard Logic)
+### 3.2 PrivateRouter 및 AdminRoute (Guard Logic)
 - **인증 상태 조회**: `AuthContext`의 `isAuthenticated` 값을 참조하여 접근 허용 여부를 판별합니다.
+- **관리자 권한 검증**: `AdminRoute`는 `isAuthenticated`뿐만 아니라 유저의 `role`이 `ADMIN`인지 추가로 검증합니다.
 - **자동 리다이렉트**: 비인가 접근 시 `Navigate` 컴포넌트를 사용하여 메인 또는 로그인 유도 모달로 즉시 이동시킵니다.
 
 ---
