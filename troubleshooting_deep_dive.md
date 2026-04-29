@@ -10,13 +10,13 @@
 ---
 
 ## 📑 목차
-1. [💬 Case 1: 플랫폼 전역 알림 수신을 위한 STOMP 글로벌 채널 구축](#-case-1-플랫폼-전역-알림-수신을-위한-stomp-글로벌-채널-구축)
-2. [📰 Case 2: 국내 데이터 한계 극복을 위한 해외 뉴스 + Gemini AI 번역 파이프라인 설계](#-case-2-국내-데이터-한계-극복을-위한-해외-뉴스--gemini-ai-번역-파이프라인-설계)
-3. [🚀 Case 3: 통신 오버헤드 방어를 위한 서버 사이드 FileCacheService 구축](#-case-3-통신-오버헤드-방어를-위한-서버-사이드-filecacheservice-구축)
-4. [🔐 Case 4: Axios 인터셉터 기반 전역 권한(403)/인증(401) 예외 방어](#-case-4-axios-인터셉터-기반-전역-권한403인증401-예외-방어)
-5. [🔄 Case 5: Intersection Observer와 JPA Slice를 활용한 무한 스크롤 최적화](#-case-5-intersection-observer와-jpa-slice를-활용한-무한-스크롤-최적화)
-6. [✨ Case 6: 프론트엔드 역방향 스크롤 점핑(Jumping) 현상 제어](#-case-6-프론트엔드-역방향-스크롤-점핑jumping-현상-제어)
-7. [⚡ Case 7: 실시간 채팅 동시성 제어 (Optimistic Lock) 적용](#-case-7-실시간-채팅-동시성-제어-optimistic-lock-적용)
+1. [💬 Case 1: 플랫폼 전역 알림 수신을 위한 STOMP 글로벌 채널 구축](#case-1-플랫폼-전역-알림-수신을-위한-stomp-글로벌-채널-구축)
+2. [📰 Case 2: 국내 데이터 한계 극복을 위한 해외 뉴스 + Gemini AI 번역 파이프라인 설계](#case-2-국내-데이터-한계-극복을-위한-해외-뉴스--gemini-ai-번역-파이프라인-설계)
+3. [🚀 Case 3: 통신 오버헤드 방어를 위한 서버 사이드 FileCacheService 구축](#case-3-통신-오버헤드-방어를-위한-서버-사이드-filecacheservice-구축)
+4. [🔐 Case 4: Axios 인터셉터 기반 전역 권한(403)/인증(401) 예외 방어](#case-4-axios-인터셉터-기반-전역-권한403인증401-예외-방어)
+5. [🔄 Case 5: Intersection Observer와 JPA Slice를 활용한 무한 스크롤 최적화](#case-5-intersection-observer와-jpa-slice를-활용한-무한-스크롤-최적화)
+6. [✨ Case 6: 프론트엔드 역방향 스크롤 점핑(Jumping) 현상 제어](#case-6-프론트엔드-역방향-스크롤-점핑jumping-현상-제어)
+7. [⚡ Case 7: 실시간 채팅 동시성 제어 (Optimistic Lock) 적용](#case-7-실시간-채팅-동시성-제어-optimistic-lock-적용)
 
 ---
 

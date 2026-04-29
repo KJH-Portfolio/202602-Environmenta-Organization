@@ -65,6 +65,9 @@ graph TD
 - `src/components`: 재사용 가능한 UI 모듈 분리 (Atom 수준의 `common` 컴포넌트 활용)
 - `src/context`: AuthContext(인증 상태), ChatContext(웹소켓 세션 유지) 전역 상태 공유
 
+> [!TIP]
+> 프론트엔드의 상세 컴포넌트 설계 및 폴더 구조는 **[React Architecture (react_structure.md)](react_structure.md)** 문서에서 더 깊게 확인하실 수 있습니다.
+
 ---
 
 ## 📊 3. 데이터 흐름 및 통신 아키텍처 (Messaging & AI Pipeline)
@@ -92,13 +95,13 @@ sequenceDiagram
     S->>C: Broadcast to /topic/room/101
 ```
 
-### 3.2 AI 분석 및 비동기 데이터 파이프라인
-외부 생성형 AI(Gemini)와 공공데이터 연동 시 발생하는 지연(Latency) 문제를 해결하기 위한 구조입니다.
+### 3.2 외부 API 통신 및 다중 캐싱 전략
+외부 환경 데이터 및 AI 분석 시 발생하는 네트워크 지연(Latency)을 최소화하기 위한 통신 설계입니다.
 
-- **Non-blocking WebClient**: 기존의 RestTemplate(동기/차단) 방식 대신 Spring WebFlux의 `WebClient`를 채택. AI API 응답을 대기하는 동안 톰캣의 워커 스레드가 차단되지 않도록 하여 다중 사용자 환경에서 서버 마비를 방지.
-- **다중 캐싱(Caching) 전략**: 외부 API의 Rate Limit 방지 및 응답 속도 최적화.
-  - **Local File Cache**: 날씨 등 변동성이 상대적으로 낮은 공공데이터를 로컬 JSON 형태로 임시 저장.
-  - **Caffeine Cache (Memory)**: AI가 빈번하게 반환하는 답변 템플릿(일일 환경 팁 등)을 인메모리에 적재하여 0.01초 내로 응답.
+- **API 통신 모던화 (WebClient 도입)**: 기존의 `RestTemplate` 방식에서 벗어나 확장성이 뛰어난 **`WebClient`를 기상청 API 연동 등에 우선 도입**했습니다. 이를 통해 향후 완전한 비동기/논블로킹 아키텍처로 전환할 수 있는 기술적 기반을 마련했습니다.
+- **성능 최적화 (Multi-tier Caching)**: 외부 API 호출 비용과 응답 시간을 줄이기 위해 계층별 캐싱을 운용합니다.
+  - **Local File Cache**: 기상 데이터와 같이 변동 주기가 명확한 공공데이터를 서버 로컬에 JSON 형태로 캐싱하여 불필요한 중복 요청을 방지합니다.
+  - **Caffeine Cache (In-memory)**: AI 분석 결과나 빈번하게 조회되는 템플릿 데이터를 메모리에 적재하여 0.01초 내외의 빠른 응답 속도를 확보했습니다.
 
 ---
 
