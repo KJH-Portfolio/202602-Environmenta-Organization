@@ -2,15 +2,15 @@
 작성일: 2026-04-25T02:30
 수정일: 2026-04-25T02:30
 ---
-# ⚛️ EasyEarth 파이널 프로젝트 React Architecture
+# EasyEarth 파이널 프로젝트 React Architecture
 
 > **컴포넌트 기반 아키텍처 및 프론트엔드 설계 명세**  
 > 이 문서는 파이널 프로젝트의 리액트 프론트엔드 구조, 상태 관리 전략, 그리고 백엔드와의 효율적인 통신 아키텍처를 정의합니다.
 
 ---
 
-## 📑 목차
-1. [프론트엔드 설계 원칙 (Technical Note)](#-프론트엔드-설계-원칙-technical-note)
+## 목차
+1. [프론트엔드 설계 원칙 (Technical Note)](#프론트엔드-설계-원칙-technical-note)
 2. [상세 폴더 구조 (Project Structure)](#1-상세-폴더-구조-project-structure)
 3. [상태 관리 및 보안 (State & Auth)](#2-상태-관리-및-보안-state--auth)
 4. [라우팅 시스템 설계 (Routing System)](#3-라우팅-시스템-설계-routing-system)
@@ -18,14 +18,14 @@
 
 ---
 
-## 💡 프론트엔드 설계 원칙 (Technical Note)
+## 프론트엔드 설계 원칙 (Technical Note)
 - **컴포넌트 재사용성**: 아토믹 디자인 패턴의 개념을 차용하여 `shared` 폴더에 공통 UI 컴포넌트를 분리, 코드 중복을 최소화하고 유지보수성을 높였습니다.
 - **Stateless 인증 유지**: 세션 대신 **JWT**를 사용하며, `Axios Interceptor`를 통해 모든 API 요청 시 자동으로 토큰을 주입하고 만료 시 중앙 집중형 에러 핸들링을 수행합니다.
 - **반응형 대시보드**: 사용자 활동 지표(탄소 절감량, 에코트리 성장 등)를 시각화하기 위해 최적화된 상태 업데이트 로직과 반응형 레이아웃을 적용했습니다.
 
 ---
 
-## 📊 1. 전체 폴더 구조 (Project Structure)
+## 1. 상세 폴더 구조 (Project Structure)
 
 파이널 프로젝트의 프론트엔드 소스코드는 역할별로 엄격히 계층화되어 관리됩니다.
 
@@ -61,7 +61,7 @@ src/
 
 ---
 
-## 🔐 2. 상태 관리 및 보안 (State & Auth)
+## 2. 상태 관리 및 보안 (State & Auth)
 
 ### 2.1 Context API 기반 전역 상태
 - **AuthContext**: 사용자의 로그인 상태, JWT 토큰 정보, 프로필 정보를 앱 전체에서 공유합니다.
@@ -73,7 +73,7 @@ src/
 
 ---
 
-## 🛣️ 3. 라우팅 시스템 설계 (Routing System)
+## 3. 라우팅 시스템 설계 (Routing System)
 
 사용자 권한에 따라 페이지 접근을 통제하고, 선언적인 라우팅 구조를 유지합니다.
 
@@ -119,7 +119,7 @@ graph TD
 
 ---
 
-## 🛠️ 4. 공통 컴포넌트 활용 전략 (Common Components)
+## 4. 공통 컴포넌트 활용 전략 (Common Components)
 
 디자인 시스템의 일관성을 유지하고 개발 생산성을 높이기 위해 `src/components/common`에 공통 컴포넌트를 구축했습니다.
 

@@ -1,4 +1,4 @@
-# 🌍 EasyEarth (이지어스)
+# EasyEarth (이지어스)
 
 > 🌱 **탄소 발자국 추적과 AI 환경 비서를 통해 지속 가능한 지구를 만드는 친환경 라이프스타일 플랫폼** 🌏
 
@@ -30,7 +30,7 @@
 
 ---
 
-## 📅 1. 기본 정보 (Info)
+## 1. 기본 정보 (Info)
 - **개발 기간:** 2026.03 ~ 2026.04 (약 2개월)
 - **플랫폼:** Web (Responsive)
 - **인원 구성:** 개인 프로젝트 (또는 팀 구성 명시)
@@ -44,7 +44,7 @@
 
 ---
 
-## 📊 2. 프로젝트 전체 설계 (Architecture)
+## 2. 프로젝트 전체 설계 (Architecture)
 > 프로젝트의 논리적 구조와 데이터 흐름을 시각화한 상세 문서들입니다.
 
 - **📊 ERD (Entity Relationship Diagram)**
@@ -69,15 +69,15 @@
 <summary><b>3. 프로젝트 개인 구현 - 백엔드 설계 및 비즈니스 정합성 [CORE] 💎</b></summary>
 <br>
 
-### 🛡️ 1) JWT 기반 Stateless 인증 시스템 (Security)
+### 1) JWT 기반 Stateless 인증 시스템 (Security)
 - **Bearer 토큰 인증 (`JwtFilter`)**: `OncePerRequestFilter`를 통한 모든 HTTP 요청 가로채기 및 유효성 검증.
 - **보안 무결성**: `SecurityContextHolder` 연동을 통해 세션 없이도 안정적인 유저 컨텍스트 유지 및 `BCrypt` 단방향 해시 암호화 적용.
 
-### 🌏 2) 정밀 탄소 알고리즘 및 위치 기반 서비스 (Map & Algo)
+### 2) 정밀 탄소 알고리즘 및 위치 기반 서비스 (Map & Algo)
 - **Eco-Route 알고리즘**: `OpenRouteService(ORS)`와 `ODsay` 데이터를 융합하여 도보/자전거/대중교통 경로 시각화.
 - **환경 수치 산출**: `거리 * 0.21(탄소 계수)` 및 `절감량 / 6.6(소나무 흡수량)` 공식을 적용한 실시간 환경 기여도 정밀 계산.
 
-### 💰 3) Eco-Wallet 및 리워드 생태계 (Economy)
+### 3) Eco-Wallet 및 리워드 생태계 (Economy)
 - **트랜잭션 기반 보상**: 퀴즈, 퀘스트, 출석 등 활동 발생 시 포인트 가감 및 이력 기록의 원자적 처리 보장.
 - **EcoTree 성장 모델**: 누적 XP에 따른 레벨업 및 단계별 나무 이미지 동적 렌더링 로직 구현.
 
@@ -89,16 +89,16 @@
 <summary><b>4. 기술적 깊이 - 성능 최적화 및 AI 파이프라인 [DEEP DIVE] 🔥</b></summary>
 <br>
 
-### 🤖 1) Gemini AI 연동 및 비동기 데이터 파이프라인
+### 1) Gemini AI 연동 및 비동기 데이터 파이프라인
 - **AI 비서 멘트 생성**: `WebClient`를 활용한 Non-blocking 통신으로 Gemini AI 호출. 날씨/환경 데이터를 기반으로 한 프롬프트 엔지니어링 수행.
 - **성능 최적화 (File Cache)**: 빈번한 AI 호출을 줄이기 위해 생성된 멘트를 로컬 파일 시스템에 JSON으로 직렬화하여 저장하는 커스텀 `FileCacheService` 구축.
 
-### 💬 2) 고성능 실시간 메시징 엔진 (WebSocket)
+### 2) 고성능 실시간 메시징 엔진 (WebSocket)
 - **STOMP 브로드캐스팅**: `/topic` 및 `/queue` 경로 설정을 통한 효율적인 메시지 라우팅 및 세션 관리 최적화.
 - **Unread Count 알고리즘**: 참여자별 마지막 읽은 메시지 ID를 추적하여 실시간 안 읽은 메시지 개수를 계산하는 고속 쿼리 설계.
 - **커서 기반 페이징 (Cursor-based)**: 대용량 대화 내역 조회 시 성능 저하 방지를 위해 커서 ID를 활용한 무한 스크롤 구현.
 
-### 🔌 3) 프론트엔드 상태 동기화 및 에러 핸들링
+### 3) 프론트엔드 상태 동기화 및 에러 핸들링
 - **Multi-layer Sync**: `Storage Event`와 `Interval Tracker`를 결합하여 다중 브라우저 탭 간 로그인 상태 완벽 동기화.
 - **Axios Interceptor**: 401/403 에러 발생 시 중앙 집중형 토큰 정리 및 자동 로그인 유도 로직 구축.
 
@@ -118,7 +118,7 @@
 
 ---
 
-## 📦 6. 실행 방법 (How to Run)
+## 6. 실행 방법 (How to Run)
 1. **Prerequisites**: Docker Desktop, Java 17
 2. **Setup**:
    ```bash

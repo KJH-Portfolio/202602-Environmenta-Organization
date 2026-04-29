@@ -1,11 +1,11 @@
-# 🏗️ EasyEarth 파이널 프로젝트 Infrastructure Architecture
+# EasyEarth 파이널 프로젝트 Infrastructure Architecture
 
 > **실시간 통신, AI 파이프라인 및 도메인 중심 설계 명세**  
 > 이 문서는 파이널 프로젝트의 핵심 기술적 차별점인 실시간 메시징 엔진, 비동기 AI 파이프라인, 그리고 컨테이너 기반의 물리/논리 아키텍처를 정의합니다.
 
 ---
 
-## 📑 목차
+## 목차
 1. [🏢 물리 인프라 아키텍처 (Docker & Container)](#1-물리-인프라-아키텍처-docker--container)
 2. [📦 소프트웨어 아키텍처 (Domain-First Package)](#2-소프트웨어-아키텍처-domain-first-package)
 3. [📊 데이터 흐름 및 통신 아키텍처 (Messaging & AI Pipeline)](#3-데이터-흐름-및-통신-아키텍처-messaging--ai-pipeline)
@@ -14,7 +14,7 @@
 
 ---
 
-## 🏢 1. 물리 인프라 아키텍처 (Docker & Container)
+## 1. 물리 인프라 아키텍처 (Docker & Container)
 
 본 프로젝트는 서비스 구성 요소의 완벽한 격리와 개발/운영 환경의 일관성 유지를 위해 **Docker Compose 기반 컨테이너 망**을 구축했습니다.
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 📦 2. 소프트웨어 아키텍처 (Domain-First Package)
+## 2. 소프트웨어 아키텍처 (Domain-First Package)
 
 코드 가독성과 유지보수성을 높이기 위해 기술 계층 중심(Controller, Service...)이 아닌 **비즈니스 도메인 단위**로 패키지를 분리 설계했습니다.
 
@@ -70,7 +70,7 @@ graph TD
 
 ---
 
-## 📊 3. 데이터 흐름 및 통신 아키텍처 (Messaging & AI Pipeline)
+## 3. 데이터 흐름 및 통신 아키텍처 (Messaging & AI Pipeline)
 
 일반적인 HTTP 요청(Blocking)의 한계를 넘어서는 고성능 실시간 통신 및 비동기 처리 파이프라인입니다.
 
@@ -105,7 +105,7 @@ sequenceDiagram
 
 ---
 
-## 🗄️ 4. 데이터베이스 설계 전략 (Persistence Layer)
+## 4. 데이터베이스 설계 전략 (Persistence Layer)
 
 대용량 데이터 조회 시의 부하를 줄이고 무결성을 지키는 DB 설계 전략입니다.
 
@@ -115,7 +115,7 @@ sequenceDiagram
 
 ---
 
-## 🛡️ 5. 보안 및 방어적 설계 (Security & Integrity)
+## 5. 보안 및 방어적 설계 (Security & Integrity)
 
 비즈니스 로직과 데이터를 보호하기 위한 다층 보안 체계입니다.
 

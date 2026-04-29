@@ -1,11 +1,11 @@
-# 🗄️ EasyEarth 물리 데이터 모델링 명세 (ERD Specification)
+# EasyEarth 물리 데이터 모델링 명세 (ERD Specification)
 
 > **탄소 중립 실천 및 게이미피케이션 시스템을 위한 물리 DB 설계 전략**  
 > 이 문서는 실시간 채팅, AI 환경 일기, 탄소 발자국 정밀 계산 시스템의 모든 테이블(34개)과 상세 제약조건을 실제 DB 구현체(`init_db.sql`)와 100% 동일하게 정의하며, 데이터 정합성을 위한 논리/물리 설계 근거를 명세합니다.
 
 ---
 
-## 📑 목차
+## 목차
 1. [데이터 설계 및 정합성 유지 원칙](#1-데이터-설계-및-정합성-유지-원칙-technical-note)
 2. [전체 도메인 관계도 (Overview)](#2-전체-도메인-관계도-overview)
 3. [도메인 계층 구조 (Hierarchy View)](#3-도메인-계층-구조-hierarchy-view)
@@ -15,7 +15,7 @@
 
 ---
 
-## 💡 1. 데이터 설계 및 정합성 유지 원칙 (Technical Note)
+## 1. 데이터 설계 및 정합성 유지 원칙 (Technical Note)
 - **수치 정밀도 (Precision)**: 탄소 절감량(`CO2_GRAM`) 등 환경 수치는 데이터 손실 방지를 위해 Oracle `NUMBER(10, 2)` 타입을 적용하여 정밀하게 관리합니다.
 - **트리거 기반 자동화**: 회원가입 시 지갑(`POINT_WALLET`) 및 나무(`ECO_TREE`) 자동 생성, 리뷰 작성 시 상점 평점(`AVG_RATING`) 자동 갱신 등을 DB 트리거 레벨에서 처리하여 비즈니스 로직의 일관성을 확보했습니다.
 - **Soft Delete & Status**: 커뮤니티 게시글 및 댓글은 데이터 이력 보존을 위해 `STATUS` 컬럼('Y', 'N', 'B')을 활용한 논리 삭제 방식을 채택했습니다.
@@ -24,7 +24,7 @@
 
 ---
 
-## 📊 2. 전체 도메인 관계도 (Overview)
+## 2. 전체 도메인 관계도 (Overview)
 
 서비스의 전체 데이터 흐름과 핵심 엔티티 간의 유기적인 관계를 정의합니다. 초기 데이터 적재 전략 및 더미 데이터 현황은 **[초기 데이터 및 설정 관리 (init_data.md)](init_data.md)** 문서에서 확인하실 수 있습니다.
 
@@ -434,7 +434,7 @@ erDiagram
 
 ---
 
-## 🔄 3. 도메인 계층 구조 (Hierarchy View)
+## 3. 도메인 계층 구조 (Hierarchy View)
 
 ```text
 MEMBER (MEMBER_ID)
@@ -469,7 +469,7 @@ MEMBER (MEMBER_ID)
 
 ---
 
-## 📋 4. 테이블 상세 명세 (Data Dictionary)
+## 4. 테이블 상세 명세 (Data Dictionary)
 
 본 섹션은 `EasyEarth` 시스템의 데이터 정합성과 성능 최적화를 위해 설계된 **34개 전체 테이블**의 물리적 명세를 실제 `init_db.sql` 스크립트와 100% 동기화하여 기술합니다.
 
@@ -753,7 +753,7 @@ MEMBER (MEMBER_ID)
 
 ---
 
-## 🗂️ 5. 도메인별 분리 ERD (Domain Specific)
+## 5. 도메인별 분리 ERD (Domain Specific)
 
 ### 5.1 회원 및 보안 (Identity)
 ```mermaid
@@ -909,7 +909,7 @@ erDiagram
 
 ---
 
-## ⚡ 6. DB 성능 및 최적화 전략 (Performance Optimization)
+## 6. DB 성능 및 최적화 전략 (Performance Optimization)
 
 본 시스템은 실시간 채팅과 대용량 AI 분석 데이터를 처리하기 위해 Oracle DB의 물리적 특성을 고려한 최적화 전략을 적용했습니다.
 

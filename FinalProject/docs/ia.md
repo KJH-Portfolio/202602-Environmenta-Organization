@@ -5,13 +5,13 @@
 
 ---
 
-## 📑 목차
+## 목차
 1. [전체 사이트 구조 (Overview)](#1-전체-사이트-구조-overview)
 2. [도메인별 상세 구조](#2-도메인별-상세-구조)
-   - [🌏 에코 맵 (Map & Route)](#-에코-맵-map--route)
-   - [💬 실시간 채팅 (Messaging)](#-실시간-채팅-messaging)
-   - [📝 커뮤니티 (Community)](#-커뮤니티-community)
-   - [🌱 마이페이지 (My & Growth)](#-마이페이지-my--growth)
+   - [🌏 에코 맵 (Map & Route)](#에코-맵-map--route)
+   - [💬 실시간 채팅 (Messaging)](#실시간-채팅-messaging)
+   - [📝 커뮤니티 (Community)](#커뮤니티-community)
+   - [🌱 마이페이지 (My & Growth)](#마이페이지-my--growth)
 
 ---
 
@@ -40,7 +40,7 @@ graph TD
 
 ## 2. 도메인별 상세 구조
 
-### 🌏 에코 맵 (Map & Route)
+### 에코 맵 (Map & Route)
 위치 기반 상점 조회 및 탄소 절감 경로 계산을 담당합니다.
 
 ```mermaid
@@ -56,7 +56,7 @@ graph LR
     style SUB_M fill:#2196F3,color:#fff
 ```
 
-### 💬 실시간 채팅 (Messaging)
+### 실시간 채팅 (Messaging)
 유저 간 실시간 소통 및 커뮤니케이션을 담당합니다.
 
 ```mermaid
@@ -73,7 +73,7 @@ graph LR
     style SUB_C fill:#FF9800,color:#fff
 ```
 
-### 📝 커뮤니티 (Community)
+### 커뮤니티 (Community)
 환경 보호 활동 공유 및 자유로운 정보 교환을 담당합니다.
 
 ```mermaid
@@ -89,7 +89,7 @@ graph LR
     style SUB_B fill:#9C27B0,color:#fff
 ```
 
-### 🌱 마이페이지 (My & Growth)
+### 마이페이지 (My & Growth)
 개인 활동 이력 관리 및 에코트리 성장을 담당합니다.
 
 ```mermaid
@@ -106,7 +106,7 @@ graph TD
 
 ---
 
-## 📋 페이지 목록 및 매핑 명세
+## 페이지 목록 및 매핑 명세
 
 | 영역 | 페이지 역할 | Mapping URL | 로그인 | 접근 권한 |
 |---|---|---|---|---|

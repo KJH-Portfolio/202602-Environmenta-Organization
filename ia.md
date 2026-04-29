@@ -2,21 +2,21 @@
 작성일: 2026-04-27T18:40
 수정일: 2026-04-27T18:40
 ---
-# 🗺️ EasyEarth 파이널 프로젝트 IA (Information Architecture)
+# EasyEarth 파이널 프로젝트 IA (Information Architecture)
 
 > **사용자 경험(UX) 중심의 페이지 계층 구조 및 API 서비스 명세**  
 > 이 문서는 서비스의 주요 메뉴 구조와 내비게이션 흐름, 그리고 백엔드 API 엔드포인트를 기반으로 플랫폼의 정보 구조와 데이터 흐름을 정의합니다.
 
 ---
 
-## 📑 목차
+## 목차
 1. [📊 서비스 레이아웃 (Overview)](#1-서비스-레이아웃-overview)
 2. [🐾 도메인별 상세 아키텍처](#2-도메인별-상세-아키텍처)
 3. [📑 페이지 및 API 상세 명세](#3-페이지-및-api-상세-명세)
 
 ---
 
-## 📊 1. 서비스 레이아웃 (Overview)
+## 1. 서비스 레이아웃 (Overview)
 
 사이트의 핵심 메뉴는 GNB(Global Navigation Bar)를 통해 제어되며, 각 도메인은 React Router의 `PrivateRoute`, `PublicRoute` 등 권한 기반 가드 시스템을 거쳐 렌더링됩니다.
 
@@ -38,7 +38,7 @@ graph TD
 
 ## 2. 도메인별 상세 아키텍처
 
-### 💬 2.1 채팅 도메인 (Chat & Notification)
+### 2.1 채팅 도메인 (Chat & Notification)
 전역(Global) 알림을 수신하는 메인 소켓 채널과 각 채팅방 내부의 로컬 통신 채널이 병렬적으로 동작합니다.
 
 ```mermaid
@@ -52,7 +52,7 @@ graph LR
     style C_EVENT fill:#F44336,color:#fff
 ```
 
-### 🌤️ 2.2 날씨 및 뉴스 도메인 (Weather & AI News)
+### 2.2 날씨 및 뉴스 도메인 (Weather & AI News)
 외부 자원(공공데이터, RSS 피드)을 서버 로컬 파일 캐시(FileCache)로 적재하고, Gemini AI를 통해 데이터를 가공하여 프론트엔드로 전달합니다.
 
 ```mermaid
@@ -66,7 +66,7 @@ graph LR
     style N_RSS fill:#03A9F4,color:#fff
 ```
 
-### 📝 2.3 에코 커뮤니티 (Community & Governance)
+### 2.3 에코 커뮤니티 (Community & Governance)
 사용자 간의 환경 지식 공유 및 신고 시스템을 통한 거버넌스를 구축했습니다.
 
 ```mermaid
@@ -78,7 +78,7 @@ graph LR
     style CO_LIST fill:#9C27B0,color:#fff
 ```
 
-### 💰 2.4 경제 및 아이템 (Economy & Shop)
+### 2.4 경제 및 아이템 (Economy & Shop)
 활동으로 획득한 포인트를 소비하고, 지도를 통해 친환경 매장을 탐색합니다.
 
 ```mermaid
@@ -90,7 +90,7 @@ graph LR
     style S_MAP fill:#4CAF50,color:#fff
 ```
 
-### 🌿 2.5 마이페이지 및 통계 (MyPage & Stats)
+### 2.5 마이페이지 및 통계 (MyPage & Stats)
 에코 다이어리와 AI 분석을 통해 사용자의 환경 기여도를 시각화합니다.
 
 ```mermaid
@@ -103,7 +103,7 @@ graph LR
 
 ---
 
-## 📑 3. 페이지 및 API 상세 명세
+## 3. 페이지 및 API 상세 명세
 
 | 도메인 | 기능(Feature) | URL 경로 (Endpoint) | 통신 방식 | 권한(Route Guard) |
 |---|---|---|---|---|
@@ -125,7 +125,7 @@ graph LR
 
 ---
 
-### 💡 문서 활용 가이드
+### 문서 활용 가이드
 - **STOMP (WebSocket)**: 클라이언트의 지속적인 폴링(Polling) 없이 서버가 클라이언트로 데이터를 즉시 푸시(Push)할 수 있는 실시간 양방향 통신 계층입니다.
 - **REST (JSON)**: 프론트엔드의 전역 인터셉터(`apis/axios.jsx`)를 통해 `Authorization: Bearer` 헤더가 자동 첨부되어 통신합니다.
 - **Route Guard**: React Router의 `PrivateRouter` 및 `AuthContext`를 통해 토큰 만료 또는 비인가 사용자의 페이지 접근을 원천 차단합니다.

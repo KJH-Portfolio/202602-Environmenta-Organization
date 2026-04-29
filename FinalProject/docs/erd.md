@@ -5,7 +5,7 @@
 
 ---
 
-## 📊 1. 전체 도메인 관계도 (Overview)
+## 1. 전체 도메인 관계도 (Overview)
 
 ```mermaid
 erDiagram
@@ -170,7 +170,7 @@ erDiagram
 
 ---
 
-## 🔄 도메인 계층 구조 (Hierarchy View)
+## 도메인 계층 구조 (Hierarchy View)
 
 > `MEMBERS` 테이블을 중심으로 한 서비스별 데이터 종속성 구조입니다.
 
@@ -191,7 +191,7 @@ MEMBERS (USER_ID)
 
 ---
 
-## 📋 테이블 그룹 요약
+## 테이블 그룹 요약
 
 | 그룹 | 테이블 | 비고 |
 |---|---|---|
@@ -203,7 +203,7 @@ MEMBERS (USER_ID)
 
 ---
 
-## ⚡ DB 성능 최적화 전략 (Index Strategy)
+## DB 성능 최적화 전략 (Index Strategy)
 
 조회 성능 극대화 및 커서 기반 페이징을 위해 다음과 같은 인덱스를 설계했습니다.
 

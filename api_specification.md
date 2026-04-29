@@ -2,21 +2,21 @@
 작성일: 2026-04-27T18:45
 수정일: 2026-04-28T16:50
 ---
-# 📋 EasyEarth 핵심 비즈니스 API 명세서 (Core API Specification)
+# EasyEarth 핵심 비즈니스 API 명세서 (Core API Specification)
 
 > **보안 아키텍처, 프로토콜 설계, 인터페이스 명세 중심의 시스템 기술서**  
 > 이 문서는 파이널 프로젝트의 핵심 비즈니스 로직을 수행하는 주요 API 및 소켓 엔드포인트들을 계층별로 정의하며, 실제 구현된 소스 코드를 통해 설계 의도를 명세합니다.
 
 ---
 
-### 🛡️ [인증 및 보안 아키텍처]
+### 인증 및 보안 아키텍처]
 1. [🛡️ 통합 핸드쉐이크 및 JWT 보안 전략 (Unified Handshake)](#1-통합-핸드쉐이크-및-jwt-보안-전략-unified-handshake)
 
-### 📡 [통신 프로토콜 설계]
+### 통신 프로토콜 설계]
 2. [💬 전역 알림 수신 채널 (Global Notification)](#2-전역-알림-수신-채널-global-notification)
 3. [💎 원자적 메시지 이벤트 브로드캐스팅 (Transactional Event)](#3-원자적-메시지-이벤트-브로드캐스팅-transactional-event)
 
-### 🧩 [인터페이스 설계]
+### 인터페이스 설계]
 4. [🌤️ AI 비서 조언 파이프라인 (AI Secretary)](#4-ai-비서-조언-파이프라인-ai-secretary)
 5. [📰 글로벌 에코 뉴스 배치 프로세스 (Eco News Batch)](#5-글로벌-에코-뉴스-배치-프로세스-eco-news-batch)
 6. [🌳 에코트리 성장 및 단계별 진화 (EcoTree Gamification)](#6-에코트리-성장-및-단계별-진화-ecotree-gamification)
@@ -24,10 +24,10 @@
 
 ---
 
-## 🛡️ 1. 통합 핸드쉐이크 및 JWT 보안 전략 (Unified Handshake)
+## 1. 통합 핸드쉐이크 및 JWT 보안 전략 (Unified Handshake)
 - **Technical Point**: HTTP(REST)와 WebSocket(STOMP) 등 서로 다른 프로토콜이 혼재된 환경에서 JWT를 기반으로 단일화된 보안 게이트웨이를 구축했습니다.
 
-### 💻 Frontend: Axios & SockJS Handshake
+### Frontend: Axios & SockJS Handshake
 ```javascript
 // 1. HTTP API 인터셉터 (axios.jsx)
 api.interceptors.request.use((config) => {
@@ -46,7 +46,7 @@ stompClient.connect({ Authorization: `Bearer ${token}` }, () => {
 });
 ```
 
-### 💻 Backend: Security Guard (JwtFilter)
+### Backend: Security Guard (JwtFilter)
 ```java
 // JwtFilter.java 中 - 모든 요청(Handshake 포함)의 관문
 @Override
@@ -72,7 +72,7 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
 
 ---
 
-## 📡 2. 전역 알림 수신 채널 (Global Notification)
+## 2. 전역 알림 수신 채널 (Global Notification)
 - **Endpoint**: `ws://[Domain]/ws-stomp`
 - **Technical Point**: 사용자가 특정 채팅방에 있지 않아도 플랫폼 어디서든 실시간 알림을 받을 수 있도록 로그인 즉시 전역 채널을 구독합니다.
 
@@ -94,7 +94,7 @@ const connectGlobalSocket = (userId) => {
 
 ---
 
-## 💎 3. 원자적 메시지 이벤트 브로드캐스팅 (Transactional Event)
+## 3. 원자적 메시지 이벤트 브로드캐스팅 (Transactional Event)
 - **Technical Point**: 데이터 정합성을 위해 메시지가 DB에 **COMMIT**된 직후에만 알림을 발송하도록 `TransactionalEventListener`를 활용했습니다.
 
 ```java
@@ -118,7 +118,7 @@ public void handleChatMessageEvent(ChatMessageEvent event) {
 
 ---
 
-## 🌤️ 4. AI 비서 조언 파이프라인 (AI Secretary)
+## 4. AI 비서 조언 파이프라인 (AI Secretary)
 - **Technical Point**: 인프라 비용 절감 및 성능을 위해 **파일 시스템 기반 캐싱**을 활용하며, 캐시 미스 시에만 Gemini SDK를 통해 맞춤형 멘트를 생성합니다.
 
 ```java
@@ -143,7 +143,7 @@ public String refreshSecretaryAdvice(Map<String, Object> weatherData) {
 
 ---
 
-## 📰 5. 글로벌 에코 뉴스 배치 프로세스 (Eco News Batch)
+## 5. 글로벌 에코 뉴스 배치 프로세스 (Eco News Batch)
 - **Technical Point**: NYT RSS를 파싱하여 Gemini AI로 가공합니다. API Rate Limit 방지를 위해 **`@Scheduled` 기반 배치**로 설계되었습니다.
 
 ```java
@@ -166,7 +166,7 @@ private String fetchGlobalNewsFromApi() {
 
 ---
 
-## 🌳 6. 에코트리 성장 및 단계별 진화 (EcoTree Gamification)
+## 6. 에코트리 성장 및 단계별 진화 (EcoTree Gamification)
 - **Technical Point**: 누적 포인트를 경험치로 환산하여 나무를 4단계로 진화시킵니다. 6개월 완주 목표의 임계치를 설정했습니다.
 
 ```java
@@ -190,7 +190,7 @@ public EcoTreeVO growTree(int memberId) {
 
 ---
 
-## ✍️ 7. 에코 액티비티 통합 보상 파이프라인 (Integrated Reward)
+## 7. 에코 액티비티 통합 보상 파이프라인 (Integrated Reward)
 - **Technical Point**: 모든 활동 상태를 `INTEGRATED_HISTORY`로 관리하며, 정답 시에만 원자적으로 보상을 지급합니다.
 
 ```java
@@ -209,7 +209,7 @@ public void saveQuizAttempt(int userId, int quizNo, boolean isCorrect, int point
 
 ---
 
-### 💡 API 설계 공통 원칙
+### API 설계 공통 원칙
 1. **Performance**: 외부 자원 호출 시 반드시 캐시(File Cache) 전략을 사용하여 외부 의존성과 인프라 비용을 최소화합니다.
 2. **Reliability**: 데이터가 DB에 완전히 반영(Commit)된 후에만 사용자에게 알림을 발송하여 데이터 불일치를 원천 차단합니다.
 3. **Efficiency**: Redis 등 고비용 인프라 대신 파일 시스템과 스케줄러를 조합하여 가용성과 경제성을 동시에 확보했습니다.

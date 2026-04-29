@@ -2,7 +2,7 @@
 작성일: 2026-04-27T18:30
 수정일: 2026-04-27T18:30
 ---
-# 🌍 EasyEarth (이지어스) Final Project
+# EasyEarth (이지어스) Final Project
 
 > **탄소 발자국 추적과 AI 환경 비서, 실시간 소통을 통해 지속 가능한 생태계를 만드는 친환경 라이프스타일 플랫폼**  
 > 이 문서는 파이널 프로젝트의 개요, 핵심 기여도, 그리고 기술적 문제 해결 과정을 담은 통합 대시보드입니다.
@@ -156,7 +156,7 @@
   - **전역 통신망 및 알림 분리 설계:** 특정 화면에 종속되지 않는 **Global Notification 채널**을 기획하여 애플리케이션 접속과 동시에 사용자 맞춤형 알림을 즉각 수신할 수 있도록 했습니다.
   - **보안 및 정합성 우선의 설정 제어:** `WebConfig`의 CORS 세팅과 `SecurityConfig`를 명확히 분리하여 보안 계층을 강화하고, `AsyncConfig`를 통해 이벤트 리스너의 성능 지연을 방지했습니다.
 
-#### 🔧 핵심 구현 소스 코드 (Core Implementation)
+#### 핵심 구현 소스 코드 (Core Implementation)
 > 실시간 데이터 스트리밍과 보안, 외부 AI 연동을 직접 설계하고 구현한 핵심 파일들입니다.
 
 - **Security & Config**: `JwtAuthenticationFilter.java` / `SecurityConfig.java` / `WebSocketConfig.java`
@@ -164,7 +164,7 @@
 - **Weather & AI**: `WeatherService.java` / `GlobalEcoNewsService.java` / `GeminiService.java`
 - **Frontend Interceptor**: `apis/axios.jsx` (JWT 토큰 자동 첨부 및 예외 처리)
 
-#### ✨ 주요 기능 하이라이트 (Functional Highlights)
+#### 주요 기능 하이라이트 (Functional Highlights)
 
 **1) 전역 알림 기반 실시간 채팅 커뮤니티**
 - 어디서든 수신 가능한 전역 STOMP 채널을 통해 끊김 없는 알림을 제공하며, 사용자 간 실시간 양방향 소통이 가능한 채팅방을 지원합니다.
