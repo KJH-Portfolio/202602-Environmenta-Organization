@@ -858,7 +858,7 @@ erDiagram
     }
 ```
 
-### 4.4 채팅 및 커뮤니티 (Messaging & Community)
+### 5.4 채팅 및 커뮤니티 (Messaging & Community)
 ```mermaid
 erDiagram
     MEMBER ||--o{ CHAT_ROOM_USER : "참여"
@@ -875,20 +875,35 @@ erDiagram
     
     CHAT_ROOM {
         number CHAT_ROOM_ID PK
+        varchar TITLE
         varchar ROOM_TYPE
         clob LAST_MESSAGE_CONTENT
+        timestamp LAST_MESSAGE_AT
+        varchar LAST_MESSAGE_TYPE
+        varchar ROOM_IMAGE
+        clob NOTICE_CONTENT
         number VERSION
+    }
+    CHAT_ROOM_USER {
+        number CHAT_ROOM_USER_ID PK
+        number CHAT_ROOM_ID FK
+        number MEMBER_ID FK
         varchar INVITATION_STATUS
+        varchar ROLE
+        number LAST_READ_MESSAGE_ID
     }
     COMMUNITY_POST {
         number POST_ID PK
         varchar CATEGORY
         varchar STATUS
+        number VIEW_COUNT
+        number LIKE_COUNT
     }
     REPORTS {
         number REPORTS_ID PK
         varchar TYPE
         varchar REASON
+        varchar STATUS
     }
 ```
 
