@@ -1,5 +1,6 @@
 package com.kh.spring.weather.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -28,6 +29,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WeatherService {
 
 
+
+
+    @Value("${kma.service.key}")
+    private String kmaServiceKey;
+
+    @Value("${kma.auth.key}")
+    private String kmaAuthKey;
 
     @Autowired
     private com.kh.spring.common.service.FileCacheService fileCacheService;
@@ -64,7 +72,7 @@ public class WeatherService {
 
     // 단기예보 공공데이터 API 데이터 조회
     private List<ForecastDto> fetchForecastList() {
-        String serviceKey = "0520e76efb72e41ae374ba77a910d0264246d16b23c171e4e817e576b2a1f52d";
+        String serviceKey = kmaServiceKey;
         LocalDateTime now = LocalDateTime.now(); // 현재 시간
 
         WebClient webClient = WebClient.builder()
@@ -145,7 +153,7 @@ public class WeatherService {
             String tm2 = now.plusHours(12).format(formatter); 
 
             // 1. API 호출 설정
-            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_sfctm3.php?tm1=" + tm1 + "&tm2=" + tm2 + "&stn=108&help=0&authKey=KaG2mDn1S7ihtpg59Su46A";
+            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_sfctm3.php?tm1=" + tm1 + "&tm2=" + tm2 + "&stn=108&help=0&authKey=" + kmaAuthKey;
             URL url = new URL(urlStr);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -239,7 +247,7 @@ public class WeatherService {
             String tm2 = now.plusHours(12).format(formatter); 
 
             // 1. API 호출 설정
-            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_pm10.php?tm1=" + tm1 + "&tm2=" + tm2 + "&stn=108&authKey=KaG2mDn1S7ihtpg59Su46A";
+            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_pm10.php?tm1=" + tm1 + "&tm2=" + tm2 + "&stn=108&authKey=" + kmaAuthKey;
             URL url = new URL(urlStr);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -310,7 +318,7 @@ public class WeatherService {
             String tm = today.format(formatter); 
 
             // 1. API 호출 설정
-            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_sfctm_uv.php?tm=" + tm + "&stn=108&help=1&authKey=KaG2mDn1S7ihtpg59Su46A";
+            String urlStr = "https://apihub.kma.go.kr/api/typ01/url/kma_sfctm_uv.php?tm=" + tm + "&stn=108&help=1&authKey=" + kmaAuthKey;
             URL url = new URL(urlStr);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");

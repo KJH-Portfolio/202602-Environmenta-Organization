@@ -34,7 +34,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@db:1521:xe
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@db:1521/XEPDB1
       - SPRING_DATASOURCE_USERNAME=EASYEARTH
       - SPRING_DATASOURCE_PASSWORD=EASYEARTH
     volumes:
@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile
     container_name: easyearth_frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
     networks:

@@ -1,6 +1,6 @@
 ---
 작성일: 2026-04-27T18:30
-수정일: 2026-04-27T18:30
+수정일: 2026-04-30T17:52
 ---
 # EasyEarth (이지어스) Final Project
 
@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Java_17-ED8B00?style=flat-square&logo=openjdk&logoColor=white" />
   <img src="https://img.shields.io/badge/Spring_Boot_3.2-6DB33F?style=flat-square&logo=springboot&logoColor=white" />
   <img src="https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Oracle_19c-F80000?style=flat-square&logo=oracle&logoColor=white" />
+  <img src="https://img.shields.io/badge/Oracle_21c_XE-F80000?style=flat-square&logo=oracle&logoColor=white" />
   <img src="https://img.shields.io/badge/Gemini_AI-4285F4?style=flat-square&logo=google&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" />
 </p>
@@ -43,8 +43,8 @@
 
 - 🛠️ **개발 환경 (Tech Stack):**
   - **Language:** `Java 17`, `JavaScript`, `JSX`
-  - **Server/Framework:** `Spring Boot 3.5`, `React 18`
-  - **Database & ORM:** `Oracle Database 19c`, `Spring Data JPA`
+  - **Server/Framework:** `Spring Boot 3.2`, `React 18`
+  - **Database & ORM:** `Oracle Database 21c (Docker XE)`, `Spring Data JPA`
   - **Real-time:** `WebSocket`, `STOMP`
   - **AI/External API:** `Google GenAI SDK (Gemma-3)`, `RestTemplate`, `NYT RSS`
   - **Security:** `Spring Security 6`, `JWT`
@@ -312,9 +312,9 @@ api.interceptors.response.use(
   - 프로젝트 초기 단계에서 API 키나 환경 변수 관리 등 보안적인 측면에 소홀했던 점을 반성합니다. 특히 '기능 구현'에만 매몰되어 **Gemini API 키를 코드에 그대로 포함하여 노출**시키는 실수를 범하기도 했습니다.
   - 보안이 조금 미흡하더라도 당장의 실행에는 문제가 없다는 안일함이 기술적 부채로 이어질 수 있음을 뼈저리게 느꼈습니다.
 
-- **🔵 Try (Security-First Planning): 기획 단계부터 통합되는 보안 및 설정 관리**
-  - 향후 프로젝트에서는 로직과 아키텍처를 모두 설계한 뒤 보안을 덧붙이는 '사후 처리' 방식이 아니라, **기획 단계에서부터 보안 프로토콜과 환경 설정(Config)을 동시에 설계**하는 'Security-First' 접근법을 취하겠습니다.
-  - 각종 설정 파일의 모듈화와 환경 변수의 철저한 분리 관리를 습관화하여, 서비스의 안정성과 신뢰도를 근본적으로 확보하는 엔지니어가 되겠습니다.
+- **🔵 Try (Security-First Planning): 환경 변수(.env) 체계 도입 및 보안 고도화**
+  - 모든 API 키와 DB 접속 정보를 `.env`로 분리하고 리팩토링하여 보안성과 유지보수성을 확보했습니다.
+  - 향후 기획 단계부터 보안 프로토콜을 우선 설계하는 'Security-First' 접근법을 체득하는 계기가 되었습니다.
 
 </details>
 
@@ -325,16 +325,22 @@ api.interceptors.response.use(
 > 이 프로젝트는 **Docker** 환경이 모두 세팅되어 있어 매우 간편하게 실행할 수 있습니다.
 
 1. **사전 준비**: 로컬 환경에 `Docker Desktop` 설치 및 실행
-2. **프로젝트 클론 및 폴더 이동**
+2. **프로젝트 클론 및 설정**
    ```bash
    git clone [레포지토리 주소]
    cd 2026-bootcamp_final_project
+   
+   # .env.example 파일을 복사하여 .env 파일을 만들고 실제 API 키를 입력하세요.
+   # [중요] DB 접속 주소는 jdbc:oracle:thin:@db:1521/XEPDB1 형식을 사용합니다.
+   cp .env.example .env 
    ```
 3. **Docker Compose를 통한 컨테이너 빌드 및 백그라운드 실행**
    ```bash
    docker-compose up -d --build
    ```
 4. **접속하기**
-   - 브라우저에서 `http://localhost:8080` 으로 접속하여 메인 화면 확인.
+   - **Frontend**: `http://localhost:8080`
+   - **Backend (API Docs)**: `http://localhost:8081/spring/swagger-ui/index.html`
+   - **Database**: `XEPDB1` (Host Port: 1523)
 
 </details>
