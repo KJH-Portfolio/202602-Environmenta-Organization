@@ -9,6 +9,7 @@ services:
       - APP_USER_PASSWORD=EASYEARTH
     ports:
       - "1523:1521"
+    shm_size: 2gb
     volumes:
       - oracle_data:/opt/oracle/oradata
       - ./FinalProject/sql 구문:/container-entrypoint-initdb.d/init.sql
