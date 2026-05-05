@@ -1,0 +1,26 @@
+# Maven build output
+target/
+
+# IDE files
+.idea/
+.settings/
+.project
+.classpath
+*.iml
+
+# Version control
+.git/
+.gitignore
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+
+# Environment variables (Security)
+.env
+.env.example
+
+# OS files
+.DS_Store
+Thumbs.db

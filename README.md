@@ -1,6 +1,6 @@
 ---
 작성일: 2026-04-27T18:30
-수정일: 2026-04-30T17:52
+수정일: 2026-05-05T16:40
 ---
 # EasyEarth (이지어스) Final Project
 
@@ -270,6 +270,23 @@ api.interceptors.response.use(
 );
 ```
 
+**6️⃣ [API Documentation] Swagger UI 통합 및 명세 자동화**
+- **구조 설계:** 프론트엔드와 백엔드 간의 협업 효율성을 극대화하기 위해, 별도의 수기 문서 없이도 실시간으로 API 명세를 확인하고 테스트할 수 있는 환경을 구축하고자 했습니다.
+- **기능 구현:** `Springdoc-openapi` 라이브러리를 활용하여 모든 Controller의 엔드포인트를 자동 스캔하고, JWT 인증이 필요한 API를 위해 전역 인증 헤더(SecurityScheme) 설정을 추가하여 Swagger UI 상에서 직접 토큰 인증 후 API 테스트가 가능하도록 구현했습니다.
+
+```java
+// SwaggerConfig.java 中 (JWT 인증 지원 설정)
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+            .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+            .components(new Components().addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()));
+    }
+}
+```
+
 ---
 
 > [!TIP]
@@ -339,8 +356,17 @@ api.interceptors.response.use(
    docker-compose up -d --build
    ```
 4. **접속하기**
-   - **Frontend**: `http://localhost:8080`
-   - **Backend (API Docs)**: `http://localhost:8081/spring/swagger-ui/index.html`
+   - **Frontend**: `http://localhost:5173` (React Vite)
+   - **Backend (API Docs)**: `http://localhost:8080/swagger-ui/index.html`
    - **Database**: `XEPDB1` (Host Port: 1523)
+
+---
+
+### 🛠️ API 테스트 가이드 (Swagger)
+본 프로젝트는 **Swagger UI**를 통해 모든 백엔드 API를 시각화하고 테스트할 수 있는 환경을 제공합니다.
+
+1. **접속**: 서버 실행 후 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)에 접속합니다.
+2. **인증**: 상단의 `Authorize` 버튼을 클릭하고, 로그인 API를 통해 발급받은 JWT 토큰을 입력(`Bearer [Token]`)하면 권한이 필요한 모든 API를 직접 호출해볼 수 있습니다.
+3. **효과**: 이를 통해 프론트엔드 개발 단계에서 백엔드 응답 구조를 미리 확인(반환값 확인)하고, 실시간으로 비즈니스 로직을 검증할 수 있습니다.
 
 </details>

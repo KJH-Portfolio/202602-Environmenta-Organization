@@ -23,15 +23,15 @@ graph TD
     subgraph "Docker Compose Mesh"
         FE["⚛️ React Frontend<br/>(Nginx / Static)"]
         BE["🚀 Spring WebApp<br/>(Java 17 / Tomcat)"]
-        DB[("🗄️ Oracle 19c<br/>(Persistence)")]
+        DB[("🗄️ Oracle 21c XE<br/>(Persistence)")]
     end
 
     EXTERNAL["🤖 Google Gemini AI<br/>(Generative AI)"]
     PUBLIC["🌤️ 공공데이터 API<br/>(기상청 날씨)"]
 
-    USR((👤 User)) -->|"HTTPS (Port 3000/443)"| FE
+    USR((👤 User)) -->|"HTTP (Port 5173)"| FE
     FE -->|"REST / WS"| BE
-    BE -->|"JDBC / MyBatis"| DB
+    BE -->|"JDBC / JPA / MyBatis"| DB
     BE -.->|"WebClient (Async)"| EXTERNAL
     BE -.->|"WebClient (Async)"| PUBLIC
 
@@ -44,7 +44,7 @@ graph TD
 
 - **App Container (Spring Boot)**: 비즈니스 로직을 처리하는 핵심 서버 컨테이너.
 - **Web Container (React)**: React 빌드 결과물을 Nginx를 통해 빠르게 정적 서빙하는 프론트엔드 컨테이너.
-- **DB Container (Oracle 19c)**: 데이터베이스 인스턴스 격리 및 구동 시점의 `init_db.sql` 자동 실행을 통한 초기화 보장.
+- **DB Container (Oracle 21c XE)**: 데이터베이스 인스턴스 격리 및 구동 시점의 `init_db.sql` 자동 실행을 통한 초기화 보장.
 - **인프라 코드화 (IaC)**: `docker-compose.yml`을 통해 모든 컨테이너의 네트워크 바인딩과 볼륨 마운트를 명세하여 이식성 극대화.
 
 ---
@@ -122,5 +122,5 @@ sequenceDiagram
 - **Stateless JWT 인증**: 세션 불일치 문제를 해결하기 위해 JWT(Access/Refresh Token) 사용. React 프론트의 `Axios Interceptor`를 통해 모든 API 요청 헤더에 토큰을 자동 주입하고, 만료(401) 시 자동 갱신 및 로그아웃 파이프라인 수행.
 - **트랜잭션 원자성(Atomicity)**: 사용자의 활동 보상 흐름(퀘스트 완료 $\rightarrow$ 포인트 잔액 갱신 $\rightarrow$ 나무 경험치 증가 $\rightarrow$ 통합 활동 로그 적재) 전체를 단일 `@Transactional` 애노테이션으로 묶어, 예외 발생 시 모든 상태를 Rollback하여 경제 시스템의 무결성 보장.
 - **취약점 방어**: 
-  - **SQL Injection**: MyBatis의 바인딩 파라미터(`#{}`)를 통해 쿼리 주입 공격 차단.
+  - **SQL Injection**: JPA의 파라미터 바인딩 및 MyBatis의 바인딩 파라미터(`#{}`)를 통해 쿼리 주입 공격 차단.
   - **XSS (크로스 사이트 스크립팅)**: 외부 노출이 잦은 커뮤니티 본문 출력 시 React JSX 고유의 텍스트 이스케이프 기능을 활용.
